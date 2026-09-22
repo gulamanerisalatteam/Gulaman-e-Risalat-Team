@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 * {
@@ -153,4 +152,22 @@ input:focus, select:focus, textarea:focus {
   margin-top: 16px;
   font-size: 14px;
   font-weight: 600;
+}
+
+/* --- LOGO STYLING (यह हिस्सा मिसिंग था) --- */
+.logo-box {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.app-logo {
+  width: 75px;
+  height: 75px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #2563eb;
+  padding: 3px;
+  background: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
