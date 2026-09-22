@@ -4,12 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Payment Collection App</title>
-  <link rel="stylesheet" href="style.css">
+  
+  <!-- CSS Folder Path -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
   <!-- 1. LOGIN SCREEN -->
   <div class="card" id="loginCard">
+    <div class="logo-box">
+      <!-- Images Folder Path -->
+      <img src="images/logo.png" alt="Logo" class="app-logo">
+    </div>
+
     <h2>Employee Login</h2>
     <form id="loginForm">
       <label>User ID:</label>
@@ -23,11 +34,15 @@
     <div id="loginMsg" class="error-msg"></div>
   </div>
 
-  <!-- 2. COLLECTION FORM SCREEN (Default Hidden) -->
+  <!-- 2. COLLECTION FORM SCREEN -->
   <div class="card hidden" id="collectionCard">
     <div class="header-bar">
       <div>कर्मचारी: <strong id="currentEmp"></strong></div>
       <button id="logoutBtn" class="btn-logout">Logout</button>
+    </div>
+
+    <div class="logo-box">
+      <img src="images/logo.png" alt="Logo" class="app-logo" style="width: 55px; height: 55px;">
     </div>
 
     <h2>Payment Entry</h2>
@@ -36,19 +51,19 @@
       <input type="text" id="custName" placeholder="ग्राहक का नाम" required>
 
       <label>Customer Mobile:</label>
-      <input type="tel" id="custMobile" placeholder="मोबाइल नंबर (Optional)">
+      <input type="tel" id="custMobile" placeholder="मोबाइल नंबर (वैकल्पिक)">
 
       <label>Amount Collected (₹):</label>
       <input type="number" id="amount" placeholder="रकम (₹)" required>
 
       <label>Payment Mode:</label>
       <select id="payMode" required>
-        <option value="Cash">Cash (नकद)</option>
-        <option value="UPI / Online">UPI / PhonePe / GPay</option>
+        <option value="Cash">Cash</option>
+        <option value="UPI">UPI / PhonePe / GPay</option>
         <option value="Cheque">Cheque</option>
       </select>
 
-      <label>Remarks / Note:</label>
+      <label>Remarks / Notes:</label>
       <textarea id="remarks" rows="2" placeholder="कोई खास विवरण..."></textarea>
 
       <button type="submit" class="btn btn-green" id="submitBtn">Save Entry</button>
@@ -56,6 +71,7 @@
     <div id="statusMsg"></div>
   </div>
 
-  <script src="script.js"></script>
+  <!-- JS Folder Path -->
+  <script src="js/script.js"></script>
 </body>
 </html>
