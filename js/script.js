@@ -1,4 +1,3 @@
-
 // 1. आपकी Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAXXMSZOOd1Cb_Tuwp8ZnjT6Iwd0jMrh6U",
@@ -13,15 +12,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// 3. कर्मचारियों की लिस्ट (ID, Password, Name)
-const EMPLOYEES = [
-  { id: "emp101", pass: "12345", name: "Ramesh" },
-  { id: "emp102", pass: "12345", name: "Suresh" },
-  { id: "emp103", pass: "12345", name: "Amit" },
-  { id: "emp104", pass: "12345", name: "Rahul" },
-  { id: "emp105", pass: "12345", name: "Pooja" }
-];
-
 let loggedInUser = null;
 
 // HTML Elements
@@ -34,34 +24,59 @@ const loginMsg = document.getElementById("loginMsg");
 const statusMsg = document.getElementById("statusMsg");
 const logoutBtn = document.getElementById("logoutBtn");
 
-// 4. लॉगिन लॉजिक
-loginForm.addEventListener("submit", function(e) {
-  e.preventDefault();
+// 3. लॉगिन लॉजिक (अब Firestore डेटाबेस से जुड़ा हुआ है)
+loginForm.addEventListener("submit", async function(e) {
+  e.preventDefault(); // फॉर्म सबमिट होने पर पेज को गायब होने (रीफ्रेश) से रोकता है
+  
   const idInput = document.getElementById("userId").value.trim();
   const passInput = document.getElementById("userPass").value.trim();
+  const loginBtn = loginForm.querySelector("button[type='submit']");
 
-  const matchedUser = EMPLOYEES.find(emp => emp.id === idInput && emp.pass === passInput);
+  loginBtn.disabled = true;
+  loginBtn.innerText = "Checking...";
+  loginMsg.style.color = "blue";
+  loginMsg.innerText = "डेटाबेस से चेक किया जा रहा है...";
 
-  if (matchedUser) {
-    loggedInUser = matchedUser;
-    loginMsg.innerText = "";
-    loginCard.classList.add("hidden");
-    collectionCard.classList.remove("hidden");
-    currentEmpLabel.innerText = matchedUser.name;
-    loginForm.reset();
-  } else {
-    loginMsg.innerText = "गलत User ID या Password!";
+  try {
+    // Firestore के 'employees' कलेक्शन में User ID चेक करना
+    const docRef = db.collection("employees").doc(idInput);
+    const docSnap = await docRef.get();
+
+    if (docSnap.exists) {
+      const userData = docSnap.data();
+      // पासवर्ड मैच करना
+      if (userData.password === passInput) {
+        loggedInUser = { id: idInput, name: userData.name };
+        loginMsg.innerText = "";
+        loginCard.classList.add("hidden");
+        collectionCard.classList.remove("hidden");
+        currentEmpLabel.innerText = userData.name;
+        loginForm.reset();
+      } else {
+        loginMsg.style.color = "red";
+        loginMsg.innerText = "पासवर्ड गलत है!";
+      }
+    } else {
+      loginMsg.style.color = "red";
+      loginMsg.innerText = "यह User ID नहीं मिली!";
+    }
+  } catch (error) {
+    loginMsg.style.color = "red";
+    loginMsg.innerText = "एरर: " + error.message;
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.innerText = "Login";
   }
 });
 
-// 5. लॉगआउट लॉजिक
+// 4. लॉगआउट लॉजिक
 logoutBtn.addEventListener("click", function() {
   loggedInUser = null;
   collectionCard.classList.add("hidden");
   loginCard.classList.remove("hidden");
 });
 
-// 6. डेटा Firebase में सेव करने का लॉजिक
+// 5. डेटा Firebase में सेव करने का लॉजिक
 collectionForm.addEventListener("submit", function(e) {
   e.preventDefault();
 
