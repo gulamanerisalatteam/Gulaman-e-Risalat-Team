@@ -18,13 +18,8 @@
 </head>
 <body>
 
-  <!-- LEFT SIDEBAR -->
-  <div class="sidebar">
-    <h2>Admin Panel</h2>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="coordinator-details.html" class="active">Coordinator Details</a>
-    <button class="logout-btn" onclick="localStorage.removeItem('adminUser'); window.location.href='index.html';">Logout</button>
-  </div>
+  <!-- LEFT SIDEBAR (Ab JavaScript se load hoga) -->
+  <div id="sidebar-container"></div>
 
   <!-- RIGHT MAIN CONTENT -->
   <div class="main-content">
@@ -64,6 +59,8 @@
     </div>
   </div>
 
+  <!-- Scripts -->
+  <script src="js/sidebar.js"></script>
   <!-- <script src="js/approvals.js"></script> -->
 </body>
 </html>
