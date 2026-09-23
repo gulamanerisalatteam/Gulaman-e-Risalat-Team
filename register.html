@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>New Cordinator Registration</title>
   
-  <!-- आपकी नई रजिस्टर CSS लिंक की गई है -->
   <link rel="stylesheet" href="css/register.css">
 </head>
 <body>
@@ -22,26 +21,23 @@
       <input type="text" id="regName" placeholder="Enter Full Name" required>
 
       <label>Mobile Number:</label>
-      <!-- 10 नंबर का मोबाइल वैलिडेशन -->
+      <!-- 10 Number Mobile Validation -->
       <input type="tel" id="regMobile" placeholder="Enter 10-digit Mobile Number" pattern="[0-9]{10}" title="कृपया 10 अंकों का मोबाइल नंबर डालें" required>
 
       <label>Aadhar Card Number:</label>
-      <!-- 12 नंबर का आधार वैलिडेशन -->
+      <!-- 12 Number Aadhar Validation -->
       <input type="text" id="regAadhar" placeholder="Enter 12-digit Aadhar Number" pattern="[0-9]{12}" title="कृपया 12 अंकों का आधार नंबर डालें" required>
 
       <label>Date of Birth:</label>
+      <!-- Date of Birth field bina kisi tip ke -->
       <input type="date" id="regDob" required>
-      <!-- यूज़र्स की आसानी के लिए टिप -->
-      <small style="display: block; margin-top: -15px; margin-bottom: 20px; color: #555; font-size: 12px; font-weight: bold;">
-        * Tip: कैलेंडर में सबसे ऊपर लिखे 'साल (Year)' पर क्लिक करके आप सीधा अपना जन्म का साल चुन सकते हैं।
-      </small>
 
-      <label>Create Password:</label>
-      <input type="password" id="regPass" placeholder="Create a strong password" required>
+      <label>Create Password (4 Digits):</label>
+      <!-- Sirf 4 digits ka password / PIN validation -->
+      <input type="password" id="regPass" placeholder="Enter 4-digit PIN" pattern="[0-9]{4}" maxlength="4" title="कृपया सिर्फ 4 अंकों का पासवर्ड (PIN) डालें" required>
 
       <button type="submit" class="btn btn-blue">Register</button>
       
-      <!-- वापस लॉगिन पेज पर जाने का लिंक -->
       <p class="login-link-text">
         Already registered? <a href="index.html">Login here</a>
       </p>
@@ -50,7 +46,6 @@
     <div id="regMsg" class="error-msg"></div>
   </div>
 
-  <!-- Javascript के लिए (हम बाद में इसमें Firebase जोड़ेंगे) -->
   <!-- <script src="js/register.js"></script> -->
 </body>
 </html>
