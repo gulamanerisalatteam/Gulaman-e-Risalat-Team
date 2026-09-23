@@ -1,36 +1,39 @@
-// 1. अपनी Firebase Config यहाँ डालें (वही सेम वाली)
+// Firebase configuration
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyAXXMSZOOd1Cb_Tuwp8ZnjT6Iwd0jMrh6U",
+  authDomain: "gulaman-e-risalat-team.firebaseapp.com",
+  projectId: "gulaman-e-risalat-team",
+  storageBucket: "gulaman-e-risalat-team.firebasestorage.app",
+  messagingSenderId: "284287467697",
+  appId: "1:284287467697:web:e57714c6b594b0a9be6290"
 };
 
 // Initialize Firebase
 if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
+  firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.firestore();
 
 const tableBody = document.getElementById("coordinatorTableBody");
 
-// रियल-टाइम डेटा टेबल में लाना
+// Fetch live coordinator registrations
 db.collection("coordinators").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
-  tableBody.innerHTML = ""; // टेबल खाली करना
-  let index = 1;
+  tableBody.innerHTML = "";
+  
+  if (snapshot.empty) {
+    tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 15px;">No coordinators registered yet.</td></tr>`;
+    return;
+  }
 
+  let index = 1;
   snapshot.forEach((doc) => {
     const data = doc.data();
-    const docId = doc.id; // Firebase Document ID
+    const docId = doc.id;
 
-    // स्टेटस के हिसाब से रंग (CSS Class) तय करना
     let statusClass = "status-pending";
     if (data.status === "Approved") statusClass = "status-approved";
     if (data.status === "Rejected") statusClass = "status-rejected";
 
-    // टेबल की रो (Row) बनाना
     const row = `
       <tr>
         <td>${index++}</td>
@@ -48,9 +51,11 @@ db.collection("coordinators").orderBy("timestamp", "desc").onSnapshot((snapshot)
     `;
     tableBody.innerHTML += row;
   });
+}, (error) => {
+  tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: #dc3545; padding: 15px;">Failed to load data: ${error.message}</td></tr>`;
 });
 
-// 3. Status Update (Approve / Pending) फंक्शन
+// Update Status (Approve / Pending)
 window.updateStatus = function(docId, newStatus) {
   db.collection("coordinators").doc(docId).update({
     status: newStatus
@@ -59,7 +64,7 @@ window.updateStatus = function(docId, newStatus) {
   });
 };
 
-// 4. Delete Record फंक्शन
+// Delete Registration
 window.deleteRecord = function(docId) {
   if (confirm("Are you sure you want to permanently delete this registration?")) {
     db.collection("coordinators").doc(docId).delete().catch((error) => {
