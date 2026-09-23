@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donation Slip - Coordinator</title>
+  
+  <link rel="stylesheet" href="css/register.css">
+  
+  <style>
+    /* Top Bar Design */
+    .top-bar {
+      background: #ffffff;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .welcome-text { font-weight: bold; color: #0056b3; font-size: 16px; }
+    .logout-btn { background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    
+    /* Form input select style */
+    select {
+      width: 100%;
+      padding: 12px 15px;
+      margin: 8px 0 20px;
+      border: 1.5px solid #e1e5eb;
+      border-radius: 8px;
+      font-size: 15px;
+      background: #f8f9fa;
+    }
+  </style>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body style="background: #f4f7fa;">
+
+  <!-- Top Header -->
+  <div class="top-bar">
+    <div class="welcome-text" id="welcomeUser">Welcome, Coordinator</div>
+    <button class="logout-btn" onclick="logoutCoordinator()">Logout</button>
+  </div>
+
+  <!-- Donation Slip Card -->
+  <div class="card" style="margin-top: 30px; margin-bottom: 30px;">
+    <div class="logo-box">
+      <img src="images/logo.png" alt="Logo" class="app-logo" style="width: 80px;">
+    </div>
+
+    <h2 class="team-title">Donation Slip</h2>
+    
+    <form id="donationForm">
+      <label>Donator Name:</label>
+      <input type="text" id="donorName" placeholder="Enter Full Name" required>
+
+      <label>Donator Mobile Number:</label>
+      <input type="tel" id="donorMobile" placeholder="Enter 10-digit Mobile Number" pattern="[0-9]{10}" required>
+
+      <label>Donation Amount (₹):</label>
+      <input type="number" id="donationAmount" placeholder="Enter Amount (e.g. 500)" min="1" required>
+
+      <label>Payment Mode:</label>
+      <select id="paymentMode" required>
+        <option value="" disabled selected>Select Payment Mode</option>
+        <option value="Cash">Cash</option>
+        <option value="UPI">UPI (Google Pay / PhonePe)</option>
+        <option value="Bank Transfer">Bank Transfer</option>
+      </select>
+
+      <label>Remarks / Notes (Optional):</label>
+      <input type="text" id="donationRemarks" placeholder="Any details (Optional)">
+
+      <button type="submit" class="btn btn-blue">Submit</button>
+    </form>
+    
+    <div id="donationMsg" class="error-msg" style="margin-top: 15px; text-align: center; font-weight: bold;"></div>
+  </div>
+
+  <!-- Javascript File Link -->
+  <script src="js/donation.js"></script>
+</body>
+</html>
