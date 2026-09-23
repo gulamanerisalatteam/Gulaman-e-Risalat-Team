@@ -1,4 +1,4 @@
-// Firebase configuration (आपकी सेव की हुई कॉन्फ़िग)
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAXXMSZOOd1Cb_Tuwp8ZnjT6Iwd0jMrh6U",
   authDomain: "gulaman-e-risalat-team.firebaseapp.com",
@@ -25,11 +25,11 @@ document.getElementById("loginForm").addEventListener("submit", function(e) {
   msgBox.style.color = "#0056b3"; // Blue color while checking
   msgBox.innerText = "Checking details, please wait...";
 
-  // Firestore Database में मोबाइल नंबर ढूँढना
+  // Firestore Database mein mobile number dhundhna
   db.collection("coordinators").where("mobile", "==", mobile).get()
   .then((querySnapshot) => {
     
-    // अगर मोबाइल नंबर डेटाबेस में नहीं मिला
+    // Agar mobile number database mein nahi mila
     if (querySnapshot.empty) {
       msgBox.style.color = "#dc3545"; // Red color
       msgBox.innerText = "Mobile number not registered!";
@@ -41,21 +41,21 @@ document.getElementById("loginForm").addEventListener("submit", function(e) {
     querySnapshot.forEach((doc) => {
       const userData = doc.data();
 
-      // पासवर्ड (PIN) मैच करना
+      // Password (PIN) match karna
       if (userData.password === password) {
         userFound = true;
         
-        // Admin Approval स्टेटस चेक करना
+        // Admin Approval status check karna
         if (userData.status === "Approved") {
           msgBox.style.color = "#28a745"; // Green color
           msgBox.innerText = "Login Successful! Redirecting...";
           
-          // यूज़र का डेटा लोकल स्टोरेज में सेव करना (ताकि डैशबोर्ड पर नाम दिख सके)
+          // User ka data local storage mein save karna
           localStorage.setItem("loggedInCoordinator", JSON.stringify(userData));
           
-          // थोड़ी देर बाद कोऑर्डिनेटर के डैशबोर्ड पर भेज देना
+          // Redirecting to Donation Slip page
           setTimeout(() => {
-            window.location.href = "coordinator-home.html"; // यह पेज हम आगे बनाएंगे
+            window.location.href = "donation-slip.html";
           }, 1500);
 
         } else if (userData.status === "Pending") {
@@ -68,9 +68,9 @@ document.getElementById("loginForm").addEventListener("submit", function(e) {
       }
     });
 
-    // अगर नंबर मिल गया लेकिन पासवर्ड गलत है
+    // Agar number mil gaya lekin password galat hai
     if (!userFound) {
-      msgBox.style.color = "#dc3545"; // Red color
+      msgBox.style.color = "#dc3545"; 
       msgBox.innerText = "Incorrect Password (PIN)!";
     }
   })
