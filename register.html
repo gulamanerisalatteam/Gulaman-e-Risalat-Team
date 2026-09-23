@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Registration</title>
+  
+  <!-- आपकी नई प्रोफेशनल CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="card" id="registerCard">
+    <div class="logo-box">
+      <img src="images/logo.png" alt="Logo" class="app-logo">
+    </div>
+
+    <h2>New Registration</h2>
+    
+    <form id="registerForm">
+      <label>Full Name:</label>
+      <input type="text" id="regName" placeholder="Enter Full Name" required>
+
+      <label>Mobile Number:</label>
+      <input type="tel" id="regMobile" placeholder="Enter 10-digit Mobile Number" pattern="[0-9]{10}" title="कृपया 10 अंकों का मोबाइल नंबर डालें" required>
+
+      <label>Aadhar Card Number:</label>
+      <input type="text" id="regAadhar" placeholder="Enter 12-digit Aadhar Number" pattern="[0-9]{12}" title="कृपया 12 अंकों का आधार नंबर डालें" required>
+
+      <label>Date of Birth:</label>
+      <input type="date" id="regDob" required>
+
+      <label>Create Password:</label>
+      <input type="password" id="regPass" placeholder="Create a strong password" required>
+
+      <button type="submit" class="btn btn-blue">Register</button>
+      
+      <!-- वापस लॉगिन पेज पर जाने का लिंक -->
+      <p style="text-align: center; margin-top: 15px; font-size: 14px;">
+        Already registered? <a href="index.html" style="color: #007bff; text-decoration: none; font-weight: bold;">Login here</a>
+      </p>
+    </form>
+    
+    <div id="regMsg" class="error-msg"></div>
+  </div>
+
+  <!-- Registration JS (इसे हम बाद में बनाएंगे) -->
+  <!-- <script src="js/register.js"></script> -->
+</body>
+</html>
