@@ -28,32 +28,32 @@ const db = firebase.firestore();
 document.getElementById("donationForm").addEventListener("submit", function(e) {
   e.preventDefault();
 
+  // Naye Form ke Input fields se data nikalna
   const donorName = document.getElementById("donorName").value;
-  const donorMobile = document.getElementById("donorMobile").value;
+  const monthYear = document.getElementById("monthYear").value; // Format: YYYY-MM
   const amount = document.getElementById("donationAmount").value;
-  const mode = document.getElementById("paymentMode").value;
-  const remarks = document.getElementById("donationRemarks").value;
+  const donorType = document.getElementById("donorType").value;
+  
   const msgBox = document.getElementById("donationMsg");
 
   msgBox.style.color = "#0056b3";
-  msgBox.innerText = "Submitting payment entry...";
+  msgBox.innerText = "Submitting donation slip...";
 
   // Save data to Firestore 'donations' collection
   db.collection("donations").add({
     donorName: donorName,
-    donorMobile: donorMobile,
-    amount: Number(amount), // Saved as number for easy dashboard calculations
-    paymentMode: mode,
-    remarks: remarks,
-    coordinatorName: loggedInUser.fullName, 
+    monthYear: monthYear,
+    amount: Number(amount), 
+    donorType: donorType,
+    coordinatorName: loggedInUser.fullName, // Kis coordinator ne submit kiya
     coordinatorMobile: loggedInUser.mobile, 
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    timestamp: firebase.firestore.FieldValue.serverTimestamp() // Submission ka time
   }).then(() => {
     msgBox.style.color = "#28a745";
     msgBox.innerText = "Donation successfully recorded!";
-    document.getElementById("donationForm").reset(); // Clear form fields
+    document.getElementById("donationForm").reset(); // Form clear karna
     
-    // Remove success message after 3 seconds
+    // 3 seconds baad message hata dena
     setTimeout(() => {
       msgBox.innerText = "";
     }, 3000);
@@ -66,6 +66,6 @@ document.getElementById("donationForm").addEventListener("submit", function(e) {
 
 // 4. Logout Function
 window.logoutCoordinator = function() {
-  localStorage.removeItem("loggedInCoordinator"); // Clear saved session
-  window.location.href = "index.html"; // Redirect to login
+  localStorage.removeItem("loggedInCoordinator");
+  window.location.href = "index.html"; 
 };
