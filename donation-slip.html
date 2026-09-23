@@ -23,8 +23,8 @@
     .welcome-text { font-weight: bold; color: #0056b3; font-size: 16px; }
     .logout-btn { background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
     
-    /* Form input select style */
-    select {
+    /* Form input style for Date and Select */
+    select, input[type="month"] {
       width: 100%;
       padding: 12px 15px;
       margin: 8px 0 20px;
@@ -56,25 +56,27 @@
     <h2 class="team-title">Donation Slip</h2>
     
     <form id="donationForm">
+      <!-- 1. Name -->
       <label>Donator Name:</label>
       <input type="text" id="donorName" placeholder="Enter Full Name" required>
 
-      <label>Donator Mobile Number:</label>
-      <input type="tel" id="donorMobile" placeholder="Enter 10-digit Mobile Number" pattern="[0-9]{10}" required>
+      <!-- 2. Month and Year -->
+      <label>Month and Year:</label>
+      <input type="month" id="monthYear" required>
 
+      <!-- 3. Amount -->
       <label>Donation Amount (₹):</label>
       <input type="number" id="donationAmount" placeholder="Enter Amount (e.g. 500)" min="1" required>
 
-      <label>Payment Mode:</label>
-      <select id="paymentMode" required>
-        <option value="" disabled selected>Select Payment Mode</option>
-        <option value="Cash">Cash</option>
-        <option value="UPI">UPI (Google Pay / PhonePe)</option>
-        <option value="Bank Transfer">Bank Transfer</option>
+      <!-- 4. Donor Type -->
+      <label>Donor Type:</label>
+      <select id="donorType" required>
+        <option value="" disabled selected>Select Donor Type</option>
+        <option value="Regular">Regular Member</option>
+        <option value="New">New Member</option>
+        <option value="One-Time">One-Time Donator</option>
+        <option value="Guest">Guest</option>
       </select>
-
-      <label>Remarks / Notes (Optional):</label>
-      <input type="text" id="donationRemarks" placeholder="Any details (Optional)">
 
       <button type="submit" class="btn btn-blue">Submit</button>
     </form>
