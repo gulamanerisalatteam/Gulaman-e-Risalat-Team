@@ -9,10 +9,46 @@
 }
 
 body {
-  background: #f4f7fa; /* प्रोफेशनल एडमिन बैकग्राउंड */
+  background: #f4f7fa;
   color: #333;
   display: flex;
   min-height: 100vh;
+}
+
+/* --- MOBILE HEADER & OVERLAY (New) --- */
+.mobile-header {
+  display: none; /* Desktop पर छिपा रहेगा */
+  background: #ffffff;
+  padding: 15px 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 998;
+  width: 100%;
+}
+
+.menu-toggle {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0,0,0,0.6);
+  z-index: 999;
 }
 
 /* --- SIDEBAR --- */
@@ -23,6 +59,21 @@ body {
   padding: 25px 20px;
   display: flex;
   flex-direction: column;
+  z-index: 1000;
+  transition: all 0.3s ease; /* Smooth Sliding Animation */
+}
+
+.sidebar-logo-box {
+  text-align: center;
+  margin-bottom: 15px;
+  margin-top: 10px;
+}
+
+.sidebar-logo-box img {
+  width: 90px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0px 5px 10px rgba(0,0,0,0.15));
 }
 
 .sidebar h2 {
@@ -44,7 +95,6 @@ body {
   display: block;
 }
 
-/* जो पेज खुला होगा, वो डार्क ब्लू दिखेगा */
 .sidebar a:hover, .sidebar a.active {
   background: linear-gradient(45deg, #007bff, #0056b3);
   color: #ffffff;
@@ -52,7 +102,7 @@ body {
 }
 
 .logout-btn {
-  margin-top: auto; /* बटन को सबसे नीचे धकेलने के लिए */
+  margin-top: auto;
   background: #dc3545;
   color: white;
   text-align: center;
@@ -107,11 +157,35 @@ table { width: 100%; border-collapse: collapse; min-width: 700px; }
 th, td { padding: 15px 12px; text-align: left; border-bottom: 1px solid #e1e5eb; font-size: 14px; }
 th { background-color: #f8f9fa; color: #555; font-weight: 700; white-space: nowrap; }
 
-/* --- MOBILE RESPONSIVE --- */
+/* =========================================
+   MOBILE RESPONSIVE SETTINGS
+========================================= */
 @media (max-width: 768px) {
   body { flex-direction: column; }
-  .sidebar { width: 100%; padding: 15px; height: auto; }
-  .sidebar h2 { margin-bottom: 15px; }
-  .main-content { width: 100%; padding: 15px; }
-  .logout-btn { margin-top: 15px; }
+  
+  .mobile-header { display: flex; } /* मोबाइल पर टॉप हेडर दिखाएं */
+  
+  /* साइडबार को स्क्रीन के बाहर खिसकाएं */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -300px; 
+    height: 100vh;
+    width: 260px;
+  }
+  
+  /* जब बटन दबाएंगे तो साइडबार अंदर आ जाएगा */
+  .sidebar.active-sidebar {
+    left: 0; 
+  }
+  
+  /* बैकग्राउंड को धुंधला/काला करने के लिए */
+  .sidebar-overlay.active {
+    display: block; 
+  }
+  
+  .main-content {
+    width: 100%;
+    padding: 15px;
+  }
 }
