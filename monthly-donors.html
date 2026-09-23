@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monthly Donors - Admin Panel</title>
+  
+  <link rel="stylesheet" href="css/admin.css">
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <!-- LEFT SIDEBAR -->
+  <div id="sidebar-container"></div>
+
+  <!-- RIGHT MAIN CONTENT -->
+  <div class="main-content">
+    <h1 class="page-title">Monthly Donors Collection</h1>
+
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>S.No.</th>
+            <th>Donor Name</th>
+            <th>Month & Year</th>
+            <th>Amount (₹)</th>
+            <th>Donor Type</th>
+            <th>Submit Date & Time</th>
+          </tr>
+        </thead>
+        <tbody id="donorsTableBody">
+          <!-- Firebase Data Yahan Aayega -->
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 20px; font-weight: bold; color: #555;">Loading data...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/sidebar.js"></script>
+  <script src="js/monthly-donors.js"></script>
+</body>
+</html>
