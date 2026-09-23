@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Payment Collection App</title>
   
-  <link rel="stylesheet" href="css/style.css">
+  <!-- नया प्रीमियम CSS लिंक -->
+  <link rel="stylesheet" href="css/index.css">
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -13,11 +14,11 @@
 </head>
 <body>
 
-  <!-- 1. LOGIN SCREEN -->
+  <!-- 1. PREMIUM LOGIN SCREEN -->
   <div class="card" id="loginCard">
     
-    <!-- टीम का नाम -->
-    <h2 style="color: #007bff; margin-bottom: 15px; font-size: 22px;">Gulaman-e-Risalat Team</h2>
+    <!-- टीम का नाम (नयी क्लास के साथ) -->
+    <h2 class="team-title">Gulaman-e-Risalat Team</h2>
 
     <!-- लोगो (अब कटेगा नहीं) -->
     <div class="logo-box">
@@ -25,7 +26,7 @@
     </div>
 
     <!-- हेडिंग -->
-    <h3 style="text-align: center; margin-bottom: 20px; color: #333;">Admin / Other Login</h3>
+    <h3 class="login-subtitle">Admin / Other Login</h3>
     
     <form id="loginForm">
       <label>User ID:</label>
@@ -37,8 +38,8 @@
       <button type="submit" class="btn btn-blue">Login</button>
 
       <!-- नया रजिस्ट्रेशन लिंक -->
-      <p style="text-align: center; margin-top: 15px; font-size: 14px;">
-        new Cordinator? <a href="register.html" style="color: #007bff; text-decoration: none; font-weight: bold;">Register Here</a>
+      <p class="register-link-text">
+        new Cordinator? <a href="register.html">Register Here</a>
       </p>
     </form>
     <div id="loginMsg" class="error-msg"></div>
@@ -46,16 +47,16 @@
 
   <!-- 2. COLLECTION FORM SCREEN -->
   <div class="card hidden" id="collectionCard">
-    <div class="header-bar">
-      <div>Cordinator: <strong id="currentEmp"></strong></div>
-      <button id="logoutBtn" class="btn-logout">Logout</button>
+    <div class="header-bar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+      <div style="font-weight: bold; color: #444;">Cordinator: <strong id="currentEmp" style="color: #007bff;"></strong></div>
+      <button id="logoutBtn" style="background:#dc3545; color:#fff; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:bold;">Logout</button>
     </div>
 
     <div class="logo-box">
-      <img src="images/logo.png" alt="Logo" class="app-logo" style="width: 60px;">
+      <img src="images/logo.png" alt="Logo" class="app-logo" style="width: 70px;">
     </div>
 
-    <h2 style="margin-bottom: 15px;">Payment Entry</h2>
+    <h2 class="team-title" style="font-size: 20px;">Payment Entry</h2>
     <form id="collectionForm">
       <label>Customer Name:</label>
       <input type="text" id="custName" placeholder="ग्राहक का नाम" required>
@@ -78,7 +79,7 @@
 
       <button type="submit" class="btn btn-green" id="submitBtn">Save Entry</button>
     </form>
-    <div id="statusMsg"></div>
+    <div id="statusMsg" class="error-msg"></div>
   </div>
 
   <!-- JS Folder Path -->
