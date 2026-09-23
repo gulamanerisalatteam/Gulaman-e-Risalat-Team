@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Employee Registration</title>
+  <title>New Cordinator Registration</title>
   
-  <!-- आपकी नई प्रोफेशनल CSS -->
-  <link rel="stylesheet" href="css/style.css">
+  <!-- आपकी नई रजिस्टर CSS लिंक की गई है -->
+  <link rel="stylesheet" href="css/register.css">
 </head>
 <body>
 
@@ -15,20 +15,26 @@
       <img src="images/logo.png" alt="Logo" class="app-logo">
     </div>
 
-    <h2>New Registration</h2>
+    <h2 class="team-title">New Registration</h2>
     
     <form id="registerForm">
       <label>Full Name:</label>
       <input type="text" id="regName" placeholder="Enter Full Name" required>
 
       <label>Mobile Number:</label>
+      <!-- 10 नंबर का मोबाइल वैलिडेशन -->
       <input type="tel" id="regMobile" placeholder="Enter 10-digit Mobile Number" pattern="[0-9]{10}" title="कृपया 10 अंकों का मोबाइल नंबर डालें" required>
 
       <label>Aadhar Card Number:</label>
+      <!-- 12 नंबर का आधार वैलिडेशन -->
       <input type="text" id="regAadhar" placeholder="Enter 12-digit Aadhar Number" pattern="[0-9]{12}" title="कृपया 12 अंकों का आधार नंबर डालें" required>
 
       <label>Date of Birth:</label>
       <input type="date" id="regDob" required>
+      <!-- यूज़र्स की आसानी के लिए टिप -->
+      <small style="display: block; margin-top: -15px; margin-bottom: 20px; color: #555; font-size: 12px; font-weight: bold;">
+        * Tip: कैलेंडर में सबसे ऊपर लिखे 'साल (Year)' पर क्लिक करके आप सीधा अपना जन्म का साल चुन सकते हैं।
+      </small>
 
       <label>Create Password:</label>
       <input type="password" id="regPass" placeholder="Create a strong password" required>
@@ -36,15 +42,15 @@
       <button type="submit" class="btn btn-blue">Register</button>
       
       <!-- वापस लॉगिन पेज पर जाने का लिंक -->
-      <p style="text-align: center; margin-top: 15px; font-size: 14px;">
-        Already registered? <a href="index.html" style="color: #007bff; text-decoration: none; font-weight: bold;">Login here</a>
+      <p class="login-link-text">
+        Already registered? <a href="index.html">Login here</a>
       </p>
     </form>
     
     <div id="regMsg" class="error-msg"></div>
   </div>
 
-  <!-- Registration JS (इसे हम बाद में बनाएंगे) -->
+  <!-- Javascript के लिए (हम बाद में इसमें Firebase जोड़ेंगे) -->
   <!-- <script src="js/register.js"></script> -->
 </body>
 </html>
