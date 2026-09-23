@@ -29,30 +29,30 @@ document.getElementById("loginForm").addEventListener("submit", function(e) {
   // ADMIN LOGIN LOGIC (Agar input me '@' hai)
   // ==========================================
   if (loginId.includes("@")) {
-    db.collection("admins").where("email", "==", loginId).get()
-    .then((querySnapshot) => {
-      if (querySnapshot.empty) {
+    
+    // Yahan aapke banaye hue 'employees' collection aur Document ID ka use kiya gaya hai
+    db.collection("employees").doc(loginId).get()
+    .then((doc) => {
+      
+      // Agar email (Document ID) nahi mila
+      if (!doc.exists) {
         msgBox.style.color = "#dc3545"; 
         msgBox.innerText = "Admin Email not found!";
         return;
       }
 
-      let userFound = false;
-      querySnapshot.forEach((doc) => {
-        const adminData = doc.data();
-        if (adminData.password === password) {
-          userFound = true;
-          msgBox.style.color = "#28a745"; 
-          msgBox.innerText = "Admin Login Successful! Redirecting...";
-          
-          localStorage.setItem("adminUser", JSON.stringify(adminData));
-          setTimeout(() => {
-            window.location.href = "dashboard.html"; // Admin Dashboard
-          }, 1500);
-        }
-      });
-
-      if (!userFound) {
+      const adminData = doc.data();
+      
+      // Password match karna
+      if (adminData.password === password) {
+        msgBox.style.color = "#28a745"; 
+        msgBox.innerText = "Admin Login Successful! Redirecting...";
+        
+        localStorage.setItem("adminUser", JSON.stringify(adminData));
+        setTimeout(() => {
+          window.location.href = "dashboard.html"; // Admin Dashboard
+        }, 1500);
+      } else {
         msgBox.style.color = "#dc3545"; 
         msgBox.innerText = "Incorrect Admin Password!";
       }
