@@ -1,24 +1,23 @@
-// 1. अपनी Firebase Config यहाँ डालें (Firebase Console से कॉपी करके)
+// Firebase configuration
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyAXXMSZOOd1Cb_Tuwp8ZnjT6Iwd0jMrh6U",
+  authDomain: "gulaman-e-risalat-team.firebaseapp.com",
+  projectId: "gulaman-e-risalat-team",
+  storageBucket: "gulaman-e-risalat-team.firebasestorage.app",
+  messagingSenderId: "284287467697",
+  appId: "1:284287467697:web:e57714c6b594b0a9be6290"
 };
 
 // Initialize Firebase
 if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
+  firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.firestore();
 
 // Form Submit Event
 document.getElementById("registerForm").addEventListener("submit", function(e) {
-  e.preventDefault(); // पेज को रीफ्रेश होने से रोकना
+  e.preventDefault();
   
-  // इनपुट बॉक्स से वैल्यू निकालना
   const name = document.getElementById("regName").value;
   const mobile = document.getElementById("regMobile").value;
   const aadhar = document.getElementById("regAadhar").value; 
@@ -26,24 +25,24 @@ document.getElementById("registerForm").addEventListener("submit", function(e) {
   const password = document.getElementById("regPass").value;
   const msgBox = document.getElementById("regMsg");
 
-  msgBox.style.color = "blue";
+  msgBox.style.color = "#0056b3";
   msgBox.innerText = "Saving data, please wait...";
 
-  // Firebase 'coordinators' कलेक्शन में डेटा सेव करना
+  // Save to Firestore 'coordinators' collection
   db.collection("coordinators").add({
     fullName: name,
     mobile: mobile,
     aadhar: aadhar,
     dob: dob,
     password: password,
-    status: "Pending", // डिफ़ॉल्ट स्टेटस पेंडिंग रहेगा
+    status: "Pending",
     timestamp: firebase.firestore.FieldValue.serverTimestamp()
   }).then(() => {
-    msgBox.style.color = "green";
-    msgBox.innerText = "Registration Successful! Please wait for Admin approval.";
-    document.getElementById("registerForm").reset(); // फॉर्म खाली करना
+    msgBox.style.color = "#28a745";
+    msgBox.innerText = "Registration Successful! Waiting for Admin approval.";
+    document.getElementById("registerForm").reset();
   }).catch((error) => {
-    msgBox.style.color = "red";
+    msgBox.style.color = "#dc3545";
     msgBox.innerText = "Error: " + error.message;
   });
 });
