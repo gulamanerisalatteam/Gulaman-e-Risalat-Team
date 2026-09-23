@@ -17,7 +17,8 @@
     <!-- Header -->
     <div class="header-bar">
       <div>Admin Panel</div>
-      <button id="logoutBtn" class="btn-logout">Logout</button>
+      <!-- नया और सही Logout बटन -->
+      <button class="btn-logout" onclick="localStorage.removeItem('adminUser'); window.location.href='index.html';">Logout</button>
     </div>
 
     <!-- Summary Box -->
