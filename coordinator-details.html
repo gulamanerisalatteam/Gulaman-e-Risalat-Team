@@ -17,6 +17,10 @@
     .btn-pending { background: #f39c12; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-right: 5px; }
     .btn-delete { background: #343a40; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; }
   </style>
+
+  <!-- Firebase SDKs (डेटाबेस से डेटा लाने के लिए यह ज़रूरी है) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -41,19 +45,9 @@
           </tr>
         </thead>
         <tbody id="coordinatorTableBody">
-          <!-- डमी (Demo) डेटा -->
+          <!-- Firebase से डेटा लोड होने तक यह दिखेगा -->
           <tr>
-            <td>1</td>
-            <td><strong style="color: #0056b3;">Amaan Khan</strong></td>
-            <td>9876543210</td>
-            <td>XXXX-XXXX-XXXX</td>
-            <td>15/08/1998</td>
-            <td><span class="status-pending">Pending</span></td>
-            <td style="white-space: nowrap;">
-              <button class="btn-approve">Approve</button>
-              <button class="btn-pending">Pending</button>
-              <button class="btn-delete">Delete</button>
-            </td>
+            <td colspan="7" style="text-align: center; padding: 20px; font-weight: bold; color: #555;">Loading data...</td>
           </tr>
         </tbody>
       </table>
@@ -62,6 +56,7 @@
 
   <!-- Scripts -->
   <script src="js/sidebar.js"></script>
-  <!-- <script src="js/approvals.js"></script> -->
+  <!-- Javascript फ़ाइल अब चालू कर दी गई है -->
+  <script src="js/approvals.js"></script>
 </body>
 </html>
