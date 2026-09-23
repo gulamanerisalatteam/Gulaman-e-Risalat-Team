@@ -24,9 +24,9 @@ const loginMsg = document.getElementById("loginMsg");
 const statusMsg = document.getElementById("statusMsg");
 const logoutBtn = document.getElementById("logoutBtn");
 
-// 3. लॉगिन लॉजिक (अब Firestore डेटाबेस से जुड़ा हुआ है)
+// 3. लॉगिन लॉजिक (अब एडमिन और कर्मचारी दोनों के लिए)
 loginForm.addEventListener("submit", async function(e) {
-  e.preventDefault(); // फॉर्म सबमिट होने पर पेज को गायब होने (रीफ्रेश) से रोकता है
+  e.preventDefault(); 
   
   const idInput = document.getElementById("userId").value.trim();
   const passInput = document.getElementById("userPass").value.trim();
@@ -38,20 +38,28 @@ loginForm.addEventListener("submit", async function(e) {
   loginMsg.innerText = "डेटाबेस से चेक किया जा रहा है...";
 
   try {
-    // Firestore के 'employees' कलेक्शन में User ID चेक करना
     const docRef = db.collection("employees").doc(idInput);
     const docSnap = await docRef.get();
 
     if (docSnap.exists) {
       const userData = docSnap.data();
-      // पासवर्ड मैच करना
+      
       if (userData.password === passInput) {
         loggedInUser = { id: idInput, name: userData.name };
-        loginMsg.innerText = "";
-        loginCard.classList.add("hidden");
-        collectionCard.classList.remove("hidden");
-        currentEmpLabel.innerText = userData.name;
-        loginForm.reset();
+        
+        // --- नया लॉजिक: चेक करें कि क्या लॉगिन करने वाला एडमिन है ---
+        if (idInput === "gulamanerisalatteam@gmail.com") {
+          // एडमिन है: डेटा को ब्राउज़र में सेव करें और डैशबोर्ड पर भेजें
+          localStorage.setItem("adminUser", JSON.stringify(loggedInUser));
+          window.location.href = "dashboard.html";
+        } else {
+          // नॉर्मल कर्मचारी है: पेमेंट कलेक्शन फॉर्म दिखाएं
+          loginMsg.innerText = "";
+          loginCard.classList.add("hidden");
+          collectionCard.classList.remove("hidden");
+          currentEmpLabel.innerText = userData.name;
+          loginForm.reset();
+        }
       } else {
         loginMsg.style.color = "red";
         loginMsg.innerText = "पासवर्ड गलत है!";
@@ -69,14 +77,14 @@ loginForm.addEventListener("submit", async function(e) {
   }
 });
 
-// 4. लॉगआउट लॉजिक
+// 4. लॉगआउट लॉजिक (कर्मचारियों के लिए)
 logoutBtn.addEventListener("click", function() {
   loggedInUser = null;
   collectionCard.classList.add("hidden");
   loginCard.classList.remove("hidden");
 });
 
-// 5. डेटा Firebase में सेव करने का लॉजिक
+// 5. डेटा Firebase में सेव करने का लॉजिक (कर्मचारियों के लिए)
 collectionForm.addEventListener("submit", function(e) {
   e.preventDefault();
 
@@ -94,10 +102,9 @@ collectionForm.addEventListener("submit", function(e) {
     amount: Number(document.getElementById("amount").value),
     paymentMode: document.getElementById("payMode").value,
     remarks: document.getElementById("remarks").value.trim() || "-",
-    createdAt: firebase.firestore.FieldValue.serverTimestamp() // ऑटोमैटिक डेट और टाइम
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 
-  // Firestore के "payments" कलेक्शन में डेटा जोड़ना
   db.collection("payments").add(collectionData)
     .then(() => {
       statusMsg.style.color = "green";
