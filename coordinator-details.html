@@ -14,8 +14,7 @@
     
     /* Action Buttons */
     .btn-approve { background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-right: 5px; }
-    .btn-reject { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-right: 5px; }
-    /* Delete button ke liye naya design */
+    .btn-pending { background: #f39c12; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-right: 5px; }
     .btn-delete { background: #343a40; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; }
   </style>
 </head>
@@ -29,8 +28,6 @@
     <h1 class="page-title">Coordinator Approvals</h1>
 
     <div class="table-card">
-      <!-- 'New Registrations' heading ko yahan se remove kar diya gaya hai -->
-      
       <table>
         <thead>
           <tr>
@@ -54,7 +51,7 @@
             <td><span class="status-pending">Pending</span></td>
             <td style="white-space: nowrap;">
               <button class="btn-approve">Approve</button>
-              <button class="btn-reject">Reject</button>
+              <button class="btn-pending">Pending</button>
               <button class="btn-delete">Delete</button>
             </td>
           </tr>
