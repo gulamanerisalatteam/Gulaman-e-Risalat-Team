@@ -5,89 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Coordinator Details - Admin Panel</title>
   
-  <!-- आपकी प्रीमियम CSS -->
-  <link rel="stylesheet" href="css/index.css">
-  
+  <link rel="stylesheet" href="css/admin.css">
   <style>
-    /* सिर्फ इस टेबल के लिए खास CSS */
-    .dashboard-wrapper {
-      width: 100%;
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    
-    .table-card {
-      background-color: #ffffff;
-      border-radius: 15px;
-      padding: 25px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-      border: 1px solid rgba(0,0,0,0.05);
-      overflow-x: auto;
-    }
-
-    .table-card h2 {
-      text-align: left;
-      font-size: 22px;
-      margin-bottom: 20px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 800px; /* मोबाइल में स्क्रॉल करने के लिए */
-    }
-
-    th, td {
-      padding: 15px 12px;
-      text-align: left;
-      border-bottom: 1px solid #e1e5eb;
-      font-size: 14px;
-      color: #333;
-    }
-
-    th {
-      background-color: #f8f9fa;
-      color: #555;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    .status-pending { color: #f39c12; font-weight: bold; background: #fdf3e5; padding: 4px 8px; border-radius: 4px; }
-    .status-approved { color: #28a745; font-weight: bold; background: #e6f6ea; padding: 4px 8px; border-radius: 4px; }
-    .status-rejected { color: #dc3545; font-weight: bold; background: #fbeae9; padding: 4px 8px; border-radius: 4px; }
-
-    .action-btn {
-      padding: 8px 12px;
-      border: none;
-      border-radius: 6px;
-      color: white;
-      font-size: 13px;
-      cursor: pointer;
-      font-weight: bold;
-      margin-right: 5px;
-      transition: all 0.2s ease;
-    }
-    
-    .btn-approve { background-color: #28a745; }
-    .btn-approve:hover { background-color: #218838; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(40,167,69,0.2); }
-    
-    .btn-reject { background-color: #dc3545; }
-    .btn-reject:hover { background-color: #c82333; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(220,53,69,0.2); }
+    /* Status Labels */
+    .status-pending { color: #f39c12; background: #fdf3e5; padding: 5px 10px; border-radius: 5px; font-weight: bold; }
+    .status-approved { color: #28a745; background: #e6f6ea; padding: 5px 10px; border-radius: 5px; font-weight: bold; }
+    .status-rejected { color: #dc3545; background: #fbeae9; padding: 5px 10px; border-radius: 5px; font-weight: bold; }
+    /* Action Buttons */
+    .btn-approve { background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-right: 5px; }
+    .btn-reject { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; }
   </style>
 </head>
 <body>
 
-  <div class="dashboard-wrapper">
-    <!-- Header -->
-    <div class="card" style="padding: 15px 25px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; max-width: 100%;">
-      <div style="font-weight: bold; font-size: 18px; color: #444;">Admin Panel <span style="color: #007bff;">| Approvals</span></div>
-      <button onclick="window.location.href='dashboard.html'" style="background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold;">Back to Dashboard</button>
-    </div>
+  <!-- LEFT SIDEBAR -->
+  <div class="sidebar">
+    <h2>Admin Panel</h2>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="coordinator-details.html" class="active">Coordinator Details</a>
+    <button class="logout-btn" onclick="localStorage.removeItem('adminUser'); window.location.href='index.html';">Logout</button>
+  </div>
 
-    <!-- Data Table -->
+  <!-- RIGHT MAIN CONTENT -->
+  <div class="main-content">
+    <h1 class="page-title">Coordinator Approvals</h1>
+
     <div class="table-card">
-      <h2 class="team-title">New Coordinator Registrations</h2>
+      <h2 style="font-size: 20px; color: #333; margin-bottom: 15px;">New Registrations</h2>
       
       <table>
         <thead>
@@ -102,8 +46,7 @@
           </tr>
         </thead>
         <tbody id="coordinatorTableBody">
-          
-          <!-- यह एक डमी (Demo) डेटा है, बाद में इसे Firebase से जोड़ेंगे -->
+          <!-- डमी (Demo) डेटा -->
           <tr>
             <td>1</td>
             <td><strong style="color: #0056b3;">Amaan Khan</strong></td>
@@ -112,17 +55,15 @@
             <td>15/08/1998</td>
             <td><span class="status-pending">Pending</span></td>
             <td style="white-space: nowrap;">
-              <button class="action-btn btn-approve">Approve</button>
-              <button class="action-btn btn-reject">Reject</button>
+              <button class="btn-approve">Approve</button>
+              <button class="btn-reject">Reject</button>
             </td>
           </tr>
-          
         </tbody>
       </table>
     </div>
   </div>
 
-  <!-- JS Code for Firebase will come here later -->
   <!-- <script src="js/approvals.js"></script> -->
 </body>
 </html>
