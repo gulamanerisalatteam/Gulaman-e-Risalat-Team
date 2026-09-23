@@ -1,0 +1,140 @@
+/* =========================================
+   REGISTER.HTML SPECIFIC CSS (Premium Theme)
+========================================= */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  /* Modern soft blue gradient background */
+  background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+  color: #333333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* =========================================
+   CARD DESIGN
+========================================= */
+.card {
+  background-color: #ffffff;
+  border-radius: 20px;
+  padding: 40px 30px; 
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+  border: 1px solid rgba(255,255,255,0.5);
+}
+
+.team-title {
+  color: #0056b3; 
+  margin-bottom: 25px; 
+  font-size: 24px;
+  font-weight: 800;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.logo-box {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.app-logo {
+  width: 90px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0px 8px 10px rgba(0,0,0,0.1));
+}
+
+/* =========================================
+   FORM INPUTS
+========================================= */
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #444;
+  font-weight: 700;
+}
+
+input {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 20px;
+  border: 2px solid #e1e5eb;
+  border-radius: 10px;
+  background-color: #f8f9fa;
+  color: #333;
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+input::placeholder {
+  color: #a0a5aa;
+}
+
+input:focus {
+  outline: none;
+  border-color: #007bff;
+  background-color: #fff;
+  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15);
+}
+
+/* =========================================
+   BUTTONS & LINKS
+========================================= */
+.btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.btn-blue {
+  background: linear-gradient(45deg, #007bff, #0056b3);
+  box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+}
+
+.btn-blue:hover { 
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 123, 255, 0.4);
+}
+
+.login-link-text {
+  text-align: center; 
+  margin-top: 20px; 
+  font-size: 14px;
+  color: #666;
+}
+
+.login-link-text a {
+  color: #007bff; 
+  text-decoration: none; 
+  font-weight: bold;
+  transition: color 0.3s;
+}
+
+.login-link-text a:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+.error-msg {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 14px;
+  font-weight: bold;
+}
