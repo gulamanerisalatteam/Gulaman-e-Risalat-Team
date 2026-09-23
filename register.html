@@ -6,6 +6,10 @@
   <title>New Cordinator Registration</title>
   
   <link rel="stylesheet" href="css/register.css">
+
+  <!-- Firebase SDKs (डेटाबेस में फॉर्म भेजने के लिए यह ज़रूरी है) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -29,7 +33,7 @@
       <input type="text" id="regAadhar" placeholder="Enter 12-digit Aadhar Number" pattern="[0-9]{12}" title="कृपया 12 अंकों का आधार नंबर डालें" required>
 
       <label>Date of Birth:</label>
-      <!-- Date of Birth field bina kisi tip ke -->
+      <!-- Date of Birth field -->
       <input type="date" id="regDob" required>
 
       <label>Create Password (4 Digits):</label>
@@ -46,6 +50,7 @@
     <div id="regMsg" class="error-msg"></div>
   </div>
 
-  <!-- <script src="js/register.js"></script> -->
+  <!-- Javascript फ़ाइल अब चालू कर दी गई है -->
+  <script src="js/register.js"></script>
 </body>
 </html>
