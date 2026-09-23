@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Gulaman-e-Risalat</title>
+  <title>Login - Gulaman-e-Risalat Team</title>
   
   <link rel="stylesheet" href="css/register.css"> 
 
@@ -14,25 +14,31 @@
 <body style="background: #f4f7fa;">
 
   <div class="card" id="loginCard" style="margin-top: 50px;">
+    
+    <!-- Logo -->
     <div class="logo-box">
       <img src="images/logo.png" alt="Logo" class="app-logo">
     </div>
 
-    <h2 class="team-title">Team Login</h2>
+    <!-- Main Headings -->
+    <h2 class="team-title" style="margin-bottom: 5px;">Gulaman-e-Risalat Team</h2>
+    <h3 style="text-align: center; color: #555; font-size: 16px; margin-top: 0; margin-bottom: 25px;">Admin / Cordinator Login</h3>
     
     <form id="loginForm">
-      <!-- Email aur Mobile dono support karne ke liye type="text" -->
-      <label>Email ID / Mobile Number:</label>
-      <input type="text" id="loginId" placeholder="Enter Admin Email or Coordinator Mobile" required>
+      <!-- Email ID / Mobile Number -->
+      <label>Email ID / Mobile Number</label>
+      <input type="text" id="loginId" placeholder="Enter Email or Mobile Number" required>
 
-      <!-- Password ki limit hata di gayi hai taki admin apna password daal sake -->
-      <label>Password / 4-Digit PIN:</label>
-      <input type="password" id="loginPass" placeholder="Enter Password or PIN" required>
+      <!-- Password -->
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="Enter Password" required>
 
+      <!-- Login Button -->
       <button type="submit" class="btn btn-blue">Login</button>
       
+      <!-- Register Here Link -->
       <p class="login-link-text">
-        New Coordinator? <a href="register.html">Register here</a>
+        <a href="register.html" style="font-weight: bold; font-size: 15px;">Register Here</a>
       </p>
     </form>
     
