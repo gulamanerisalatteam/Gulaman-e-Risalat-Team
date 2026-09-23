@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard</title>
   
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
   
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -13,36 +13,37 @@
 </head>
 <body>
 
-  <div class="dashboard-wrapper">
-    <!-- Header -->
-    <div class="header-bar">
-      <div>Admin Panel</div>
-      <!-- नया और सही Logout बटन -->
-      <button class="btn-logout" onclick="localStorage.removeItem('adminUser'); window.location.href='index.html';">Logout</button>
-    </div>
+  <!-- LEFT SIDEBAR -->
+  <div class="sidebar">
+    <h2>Admin Panel</h2>
+    <a href="dashboard.html" class="active">Dashboard</a>
+    <a href="coordinator-details.html">Coordinator Details</a>
+    <button class="logout-btn" onclick="localStorage.removeItem('adminUser'); window.location.href='index.html';">Logout</button>
+  </div>
 
-    <!-- Summary Box -->
+  <!-- RIGHT MAIN CONTENT -->
+  <div class="main-content">
+    <h1 class="page-title">Dashboard Overview</h1>
+
     <div class="summary-card">
       <h3>Total Collection</h3>
       <h2 id="totalAmount">₹0</h2>
     </div>
 
-    <!-- Data Table -->
-    <div class="card table-card">
-      <h2>Recent Payments</h2>
+    <div class="table-card">
+      <h2 style="font-size: 20px; color: #333; margin-bottom: 15px;">Recent Payments</h2>
       <div class="table-responsive">
         <table>
           <thead>
             <tr>
               <th>Date</th>
-              <th>Employee</th>
+              <th>Coordinator</th>
               <th>Customer</th>
               <th>Mode</th>
               <th>Amount (₹)</th>
             </tr>
           </thead>
           <tbody id="paymentTableBody">
-            <!-- Firebase data yahan aayega -->
             <tr>
               <td colspan="5" style="text-align: center;">Loading data...</td>
             </tr>
@@ -52,7 +53,6 @@
     </div>
   </div>
 
-  <!-- Dashboard JS -->
   <script src="js/dashboard.js"></script>
 </body>
 </html>
