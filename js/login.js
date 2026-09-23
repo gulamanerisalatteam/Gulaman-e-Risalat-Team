@@ -18,64 +18,97 @@ const db = firebase.firestore();
 document.getElementById("loginForm").addEventListener("submit", function(e) {
   e.preventDefault();
 
-  const mobile = document.getElementById("loginMobile").value;
+  const loginId = document.getElementById("loginId").value.trim(); // Email ya Mobile
   const password = document.getElementById("loginPass").value;
   const msgBox = document.getElementById("loginMsg");
 
-  msgBox.style.color = "#0056b3"; // Blue color while checking
+  msgBox.style.color = "#0056b3"; 
   msgBox.innerText = "Checking details, please wait...";
 
-  // Firestore Database mein mobile number dhundhna
-  db.collection("coordinators").where("mobile", "==", mobile).get()
-  .then((querySnapshot) => {
-    
-    // Agar mobile number database mein nahi mila
-    if (querySnapshot.empty) {
-      msgBox.style.color = "#dc3545"; // Red color
-      msgBox.innerText = "Mobile number not registered!";
-      return;
-    }
-
-    let userFound = false;
-
-    querySnapshot.forEach((doc) => {
-      const userData = doc.data();
-
-      // Password (PIN) match karna
-      if (userData.password === password) {
-        userFound = true;
-        
-        // Admin Approval status check karna
-        if (userData.status === "Approved") {
-          msgBox.style.color = "#28a745"; // Green color
-          msgBox.innerText = "Login Successful! Redirecting...";
-          
-          // User ka data local storage mein save karna
-          localStorage.setItem("loggedInCoordinator", JSON.stringify(userData));
-          
-          // Redirecting to Donation Slip page
-          setTimeout(() => {
-            window.location.href = "donation-slip.html";
-          }, 1500);
-
-        } else if (userData.status === "Pending") {
-          msgBox.style.color = "#f39c12"; // Orange color
-          msgBox.innerText = "Your account is Pending. Please wait for Admin approval.";
-        } else {
-          msgBox.style.color = "#dc3545"; // Red color
-          msgBox.innerText = "Your account has been Rejected by Admin.";
-        }
+  // ==========================================
+  // ADMIN LOGIN LOGIC (Agar input me '@' hai)
+  // ==========================================
+  if (loginId.includes("@")) {
+    db.collection("admins").where("email", "==", loginId).get()
+    .then((querySnapshot) => {
+      if (querySnapshot.empty) {
+        msgBox.style.color = "#dc3545"; 
+        msgBox.innerText = "Admin Email not found!";
+        return;
       }
-    });
 
-    // Agar number mil gaya lekin password galat hai
-    if (!userFound) {
-      msgBox.style.color = "#dc3545"; 
-      msgBox.innerText = "Incorrect Password (PIN)!";
-    }
-  })
-  .catch((error) => {
-    msgBox.style.color = "#dc3545";
-    msgBox.innerText = "Error: " + error.message;
-  });
+      let userFound = false;
+      querySnapshot.forEach((doc) => {
+        const adminData = doc.data();
+        if (adminData.password === password) {
+          userFound = true;
+          msgBox.style.color = "#28a745"; 
+          msgBox.innerText = "Admin Login Successful! Redirecting...";
+          
+          localStorage.setItem("adminUser", JSON.stringify(adminData));
+          setTimeout(() => {
+            window.location.href = "dashboard.html"; // Admin Dashboard
+          }, 1500);
+        }
+      });
+
+      if (!userFound) {
+        msgBox.style.color = "#dc3545"; 
+        msgBox.innerText = "Incorrect Admin Password!";
+      }
+    })
+    .catch((error) => {
+      msgBox.style.color = "#dc3545";
+      msgBox.innerText = "Error: " + error.message;
+    });
+  } 
+  
+  // ==========================================
+  // COORDINATOR LOGIN LOGIC (Agar input Number hai)
+  // ==========================================
+  else {
+    db.collection("coordinators").where("mobile", "==", loginId).get()
+    .then((querySnapshot) => {
+      if (querySnapshot.empty) {
+        msgBox.style.color = "#dc3545"; 
+        msgBox.innerText = "Mobile number not registered!";
+        return;
+      }
+
+      let userFound = false;
+      querySnapshot.forEach((doc) => {
+        const userData = doc.data();
+        
+        if (userData.password === password) {
+          userFound = true;
+          
+          if (userData.status === "Approved") {
+            msgBox.style.color = "#28a745"; 
+            msgBox.innerText = "Login Successful! Redirecting...";
+            
+            localStorage.setItem("loggedInCoordinator", JSON.stringify(userData));
+            setTimeout(() => {
+              window.location.href = "donation-slip.html"; // Coordinator Page
+            }, 1500);
+
+          } else if (userData.status === "Pending") {
+            msgBox.style.color = "#f39c12"; 
+            msgBox.innerText = "Your account is Pending. Please wait for Admin approval.";
+          } else {
+            msgBox.style.color = "#dc3545"; 
+            msgBox.innerText = "Your account has been Rejected by Admin.";
+          }
+        }
+      });
+
+      if (!userFound) {
+        msgBox.style.color = "#dc3545"; 
+        msgBox.innerText = "Incorrect Password (PIN)!";
+      }
+    })
+    .catch((error) => {
+      msgBox.style.color = "#dc3545";
+      msgBox.innerText = "Error: " + error.message;
+    });
+  }
 });
