@@ -13,13 +13,8 @@
 </head>
 <body>
 
-  <!-- LEFT SIDEBAR -->
-  <div class="sidebar">
-    <h2>Admin Panel</h2>
-    <a href="dashboard.html" class="active">Dashboard</a>
-    <a href="coordinator-details.html">Coordinator Details</a>
-    <button class="logout-btn" onclick="localStorage.removeItem('adminUser'); window.location.href='index.html';">Logout</button>
-  </div>
+  <!-- LEFT SIDEBAR (Ab JavaScript se load hoga) -->
+  <div id="sidebar-container"></div>
 
   <!-- RIGHT MAIN CONTENT -->
   <div class="main-content">
@@ -53,6 +48,8 @@
     </div>
   </div>
 
+  <!-- Scripts (Pehle sidebar, phir dashboard) -->
+  <script src="js/sidebar.js"></script>
   <script src="js/dashboard.js"></script>
 </body>
 </html>
