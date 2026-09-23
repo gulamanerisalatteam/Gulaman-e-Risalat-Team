@@ -1,6 +1,16 @@
-// यह कोड आपके साइडबार को सभी पेजों पर लोड करेगा
+// Sidebar aur Mobile Menu ka HTML
 const sidebarHTML = `
-  <div class="sidebar">
+  <!-- 1. Mobile Header (Sirf mobile me dikhega) -->
+  <div class="mobile-header">
+    <h3 style="color: #0056b3; margin: 0; font-size: 18px; font-weight: bold;">Admin Panel</h3>
+    <button class="menu-toggle" id="menuToggleBtn">☰ Menu</button>
+  </div>
+
+  <!-- 2. Dark Overlay (Mobile par sidebar khulne par background dark karega) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- 3. Main Sidebar -->
+  <div class="sidebar" id="mainSidebar">
     <div class="sidebar-logo-box">
       <img src="images/logo.png" alt="Team Logo">
     </div>
@@ -13,15 +23,32 @@ const sidebarHTML = `
   </div>
 `;
 
-// जिस पेज पर 'sidebar-container' होगा, वहाँ यह HTML डाल दो
+// HTML ko page me inject karna
 document.getElementById("sidebar-container").innerHTML = sidebarHTML;
 
-// आप जिस पेज पर हैं, उस लिंक को अपने आप 'active' (डार्क ब्लू) करने का लॉजिक
+// Active page ko highlight karne ka logic
 const currentPage = window.location.pathname;
-
 if (currentPage.includes("coordinator-details.html")) {
   document.getElementById("nav-coordinator").classList.add("active");
 } else {
-  // अगर कोई और पेज है, तो बाय डिफ़ॉल्ट Dashboard को एक्टिव रखो
   document.getElementById("nav-dashboard").classList.add("active");
 }
+
+// ==========================================
+// Sidebar Open / Close Logic (For Mobile)
+// ==========================================
+const menuBtn = document.getElementById("menuToggleBtn");
+const sidebar = document.getElementById("mainSidebar");
+const overlay = document.getElementById("sidebarOverlay");
+
+// Menu button dabaane par sidebar bahar aayega
+menuBtn.addEventListener("click", () => {
+  sidebar.classList.add("active-sidebar");
+  overlay.classList.add("active");
+});
+
+// Dark background (overlay) par click karne par sidebar band ho jayega
+overlay.addEventListener("click", () => {
+  sidebar.classList.remove("active-sidebar");
+  overlay.classList.remove("active");
+});
