@@ -1,15 +1,15 @@
 // Sidebar aur Mobile Menu ka HTML
 const sidebarHTML = `
-  <!-- 1. Mobile Header (Sirf mobile me dikhega) -->
+  <!-- Mobile Header -->
   <div class="mobile-header">
     <h3 style="color: #0056b3; margin: 0; font-size: 18px; font-weight: bold;">Admin Panel</h3>
     <button class="menu-toggle" id="menuToggleBtn">☰ Menu</button>
   </div>
 
-  <!-- 2. Dark Overlay (Mobile par sidebar khulne par background dark karega) -->
+  <!-- Dark Overlay -->
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-  <!-- 3. Main Sidebar -->
+  <!-- Main Sidebar -->
   <div class="sidebar" id="mainSidebar">
     <div class="sidebar-logo-box">
       <img src="images/logo.png" alt="Team Logo">
@@ -41,14 +41,16 @@ const menuBtn = document.getElementById("menuToggleBtn");
 const sidebar = document.getElementById("mainSidebar");
 const overlay = document.getElementById("sidebarOverlay");
 
-// Menu button dabaane par sidebar bahar aayega
-menuBtn.addEventListener("click", () => {
-  sidebar.classList.add("active-sidebar");
-  overlay.classList.add("active");
-});
+if (menuBtn && sidebar && overlay) {
+  // Menu button dabaane par sidebar bahar aayega
+  menuBtn.addEventListener("click", () => {
+    sidebar.classList.add("active-sidebar");
+    overlay.classList.add("active");
+  });
 
-// Dark background (overlay) par click karne par sidebar band ho jayega
-overlay.addEventListener("click", () => {
-  sidebar.classList.remove("active-sidebar");
-  overlay.classList.remove("active");
-});
+  // Dark background (overlay) par click karne par sidebar band ho jayega
+  overlay.addEventListener("click", () => {
+    sidebar.classList.remove("active-sidebar");
+    overlay.classList.remove("active");
+  });
+}
