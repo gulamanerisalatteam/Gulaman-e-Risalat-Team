@@ -6,6 +6,7 @@ const sidebarHTML = `
     <button class="menu-toggle" id="menuToggleBtn">☰ Menu</button>
   </div>
 
+
   <!-- Dark Overlay -->
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
