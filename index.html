@@ -3,29 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Coordinator Login</title>
+  <title>Login - Gulaman-e-Risalat</title>
   
-  <link rel="stylesheet" href="css/register.css"> <!-- हम रजिस्टर वाली CSS ही इस्तेमाल करेंगे ताकि डिज़ाइन सेम रहे -->
+  <link rel="stylesheet" href="css/register.css"> 
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
-<body>
+<body style="background: #f4f7fa;">
 
-  <div class="card" id="loginCard">
+  <div class="card" id="loginCard" style="margin-top: 50px;">
     <div class="logo-box">
       <img src="images/logo.png" alt="Logo" class="app-logo">
     </div>
 
-    <h2 class="team-title">Coordinator Login</h2>
+    <h2 class="team-title">Team Login</h2>
     
     <form id="loginForm">
-      <label>Mobile Number (User ID):</label>
-      <input type="tel" id="loginMobile" placeholder="Enter 10-digit Mobile Number" pattern="[0-9]{10}" title="कृपया 10 अंकों का मोबाइल नंबर डालें" required>
+      <!-- Email aur Mobile dono support karne ke liye type="text" -->
+      <label>Email ID / Mobile Number:</label>
+      <input type="text" id="loginId" placeholder="Enter Admin Email or Coordinator Mobile" required>
 
-      <label>Password (4-Digit PIN):</label>
-      <input type="password" id="loginPass" placeholder="Enter 4-digit PIN" pattern="[0-9]{4}" maxlength="4" title="कृपया सिर्फ 4 अंकों का पासवर्ड (PIN) डालें" required>
+      <!-- Password ki limit hata di gayi hai taki admin apna password daal sake -->
+      <label>Password / 4-Digit PIN:</label>
+      <input type="password" id="loginPass" placeholder="Enter Password or PIN" required>
 
       <button type="submit" class="btn btn-blue">Login</button>
       
