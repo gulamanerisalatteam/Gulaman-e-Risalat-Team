@@ -8,9 +8,22 @@
   <style>
     .form-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
     .form-card label { font-weight: bold; color: #333; margin-top: 10px; display: block; font-size: 14px; }
-    .form-card select { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
-    .btn-submit { background: #0056b3; color: white; border: none; padding: 12px 20px; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    .form-card select, .form-card input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
+    
+    .checkbox-list { max-height: 250px; overflow-y: auto; border: 1px solid #ccc; border-radius: 5px; padding: 10px; background: #fdfdfd; margin-bottom: 15px; }
+    .checkbox-item { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-bottom: 1px solid #eee; }
+    .checkbox-item:last-child { border-bottom: none; }
+    .checkbox-item input { width: 18px; height: 18px; margin: 0; cursor: pointer; }
+    .checkbox-item label { margin: 0; font-weight: normal; cursor: pointer; display: inline-block; font-size: 15px; }
+    
+    .btn-submit { background: #0056b3; color: white; border: none; padding: 12px 20px; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; }
     .btn-submit:hover { background: #004494; }
+
+    /* Filters Section */
+    .filter-card { background: white; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
+    .filter-group { display: flex; flex-direction: column; flex: 1; min-width: 200px; }
+    .filter-group label { font-size: 13px; font-weight: bold; color: #555; margin-bottom: 5px; }
+    .filter-group input, .filter-group select { padding: 8px 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -24,37 +37,51 @@
   <div class="main-content">
     <h1 class="page-title">Assign Donors to Coordinators</h1>
 
+    <!-- 1. MULTIPLE ASSIGNMENT FORM -->
     <div class="form-card">
       <form id="assignForm">
-        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-          <div style="flex: 1; min-width: 250px;">
-            <label>Select Coordinator *</label>
-            <select id="coordSelect" required>
-              <option value="" disabled selected>Loading...</option>
-            </select>
-          </div>
-          <div style="flex: 1; min-width: 250px;">
-            <label>Select Donor *</label>
-            <select id="donorSelect" required>
-              <option value="" disabled selected>Loading...</option>
-            </select>
-          </div>
+        <label>1. Select Coordinator *</label>
+        <select id="coordSelect" required>
+          <option value="" disabled selected>Loading Coordinators...</option>
+        </select>
+
+        <label>2. Search Unassigned Donors</label>
+        <input type="text" id="searchUnassigned" placeholder="Type name to search...">
+
+        <label>3. Select Donors to Assign * <span style="font-size:12px; color:#555; font-weight:normal;">(Check the boxes)</span></label>
+        <div id="unassignedList" class="checkbox-list">
+          <p style="color:#777; font-size:14px; text-align:center; padding:10px;">Loading unassigned donors...</p>
         </div>
-        <button type="submit" class="btn-submit">Assign Donor</button>
+
+        <button type="submit" class="btn-submit">➕ Assign Selected Donors</button>
       </form>
-      <div id="statusMsg" style="margin-top: 15px; font-weight: bold;"></div>
+      <div id="statusMsg" style="margin-top: 15px; font-weight: bold; text-align: center;"></div>
     </div>
 
-    <!-- Assigned Donors Table -->
+    <!-- 2. FILTERS FOR ASSIGNED DONORS -->
+    <h3 style="margin-top: 30px; color: #0056b3;">📋 Assigned Donors List</h3>
+    <div class="filter-card">
+      <div class="filter-group">
+        <label>Filter by Coordinator</label>
+        <select id="filterCoord">
+          <option value="All">All Coordinators</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Search Donor Name</label>
+        <input type="text" id="filterDonorName" placeholder="Type Donor Name...">
+      </div>
+    </div>
+
+    <!-- 3. ASSIGNED DONORS TABLE -->
     <div class="table-card" style="overflow-x: auto;">
-      <h3 style="margin-top: 0; color: #0056b3; border-bottom: 2px solid #f1f1f1; padding-bottom: 10px; margin-bottom: 15px;">📋 Assigned Donors List</h3>
       <table style="width: 100%; min-width: 800px;">
         <thead>
           <tr>
             <th>S.No.</th>
+            <th>Assigned Coordinator</th>
             <th>Donor Name</th>
             <th>Mobile Number</th>
-            <th>Assigned Coordinator</th>
             <th>Action</th>
           </tr>
         </thead>
