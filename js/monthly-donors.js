@@ -12,13 +12,12 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.firestore();
-
 const tableBody = document.getElementById("donorsTableBody");
 
 // Global object to store data temporarily for the slip modal
 window.donationsData = {};
 
-// Helper Function: Convert '2026-09' to 'September-2026'
+// Helper Function: Convert '2026-11' to 'November-2026'
 function formatMonthYearString(yyyyMm) {
   if (!yyyyMm || !yyyyMm.includes("-")) return yyyyMm;
   const parts = yyyyMm.split("-");
@@ -30,7 +29,7 @@ function formatMonthYearString(yyyyMm) {
 // Fetch live Donations Data
 db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
   tableBody.innerHTML = ""; 
-  window.donationsData = {}; // Clear old data
+  window.donationsData = {}; 
   
   if (snapshot.empty) {
     tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 15px;">No donations recorded yet.</td></tr>`;
@@ -45,10 +44,8 @@ db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) =>
     // Store data so the View Slip button can access it
     window.donationsData[docId] = data;
 
-    // Convert Month Year (e.g., '2026-09' -> 'September-2026')
     const displayMonthYear = formatMonthYearString(data.monthYear);
 
-    // Submission Date formatting
     let submitDate = "N/A";
     if (data.timestamp) {
       const dateObj = data.timestamp.toDate();
@@ -58,6 +55,7 @@ db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) =>
       });
     }
 
+    // 7 Columns perfectly mapped to your HTML headers
     const row = `
       <tr>
         <td>${index++}</td>
@@ -65,12 +63,9 @@ db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) =>
         <td>${displayMonthYear}</td>
         <td style="color: #28a745; font-weight: bold;">₹ ${data.amount}</td>
         <td><span style="background: #e6f6ea; color: #28a745; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">${data.donorType}</span></td>
-        
-        <!-- Naya Slip Column Button -->
         <td>
           <button onclick="openSlipModal('${docId}')" style="background: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight:bold;">View Slip</button>
         </td>
-
         <td style="font-size: 13px; color: #555;">${submitDate}</td>
       </tr>
     `;
@@ -81,8 +76,6 @@ db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) =>
 });
 
 // --- SLIP MODAL FUNCTIONS ---
-
-// Open Modal
 window.openSlipModal = function(docId) {
   const data = window.donationsData[docId];
   if(!data) return;
@@ -91,20 +84,17 @@ window.openSlipModal = function(docId) {
   document.getElementById("mMonth").innerText = formatMonthYearString(data.monthYear);
   document.getElementById("mAmount").innerText = data.amount;
   document.getElementById("mType").innerText = data.donorType;
-  document.getElementById("mCoord").innerText = data.coordinatorName || "N/A"; // Shows which coordinator took it
+  document.getElementById("mCoord").innerText = data.coordinatorName || "N/A"; 
 
   document.getElementById("slipModal").style.display = "flex";
 };
 
-// Close Modal
 window.closeSlipModal = function() {
   document.getElementById("slipModal").style.display = "none";
 };
 
-// Download Image function for Admin
 window.downloadSlipImage = async function() {
   const receiptElement = document.getElementById("adminReceiptContent");
-  
   try {
     const canvas = await html2canvas(receiptElement, { scale: 2 }); 
     const link = document.createElement("a");
