@@ -64,6 +64,16 @@ function populateDropdowns() {
   if (coordSet.has(currentCoord)) filterCoord.value = currentCoord;
 }
 
+// --- NEW: LOAD SAVED DATES ON PAGE LOAD ---
+function loadSavedSummaryDates() {
+  const savedFrom = localStorage.getItem("summaryFromMonth");
+  const savedTo = localStorage.getItem("summaryToMonth");
+  if (savedFrom) document.getElementById("summaryFromMonth").value = savedFrom;
+  if (savedTo) document.getElementById("summaryToMonth").value = savedTo;
+}
+// Page load hote hi purani dates input box me daal do
+loadSavedSummaryDates();
+
 // Fetch live Donations Data
 db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
   window.donationsData = {}; 
@@ -91,24 +101,37 @@ db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) =>
 });
 
 
-// --- DATE RANGE FILTER LOGIC FOR SUMMARIES ---
-document.getElementById("summaryFromMonth").addEventListener("change", renderSummaries);
-document.getElementById("summaryToMonth").addEventListener("change", renderSummaries);
+// --- DATE RANGE FILTER LOGIC FOR SUMMARIES (UPDATED WITH LOCALSTORAGE) ---
+
+document.getElementById("summaryFromMonth").addEventListener("change", function() {
+  localStorage.setItem("summaryFromMonth", this.value); // Data save kiya
+  renderSummaries();
+});
+
+document.getElementById("summaryToMonth").addEventListener("change", function() {
+  localStorage.setItem("summaryToMonth", this.value); // Data save kiya
+  renderSummaries();
+});
 
 window.clearSummaryFilters = function() {
   document.getElementById("summaryFromMonth").value = "";
   document.getElementById("summaryToMonth").value = "";
+  
+  // Local storage se bhi data mita do
+  localStorage.removeItem("summaryFromMonth");
+  localStorage.removeItem("summaryToMonth");
+  
   renderSummaries();
 };
 
 function renderSummaries() {
-  const fromMonth = document.getElementById("summaryFromMonth").value; // Format: "YYYY-MM"
+  const fromMonth = document.getElementById("summaryFromMonth").value;
   const toMonth = document.getElementById("summaryToMonth").value;
 
   // Get all unique monthYears from data
   let uniqueMonths = [...new Set(window.allDonationsList.map(d => d.monthYear))].filter(Boolean).sort();
 
-  // Apply Date Range Filter lexicographically (e.g. "2026-09" <= "2027-11")
+  // Apply Date Range Filter lexicographically
   if (fromMonth) {
     uniqueMonths = uniqueMonths.filter(m => m >= fromMonth);
   }
