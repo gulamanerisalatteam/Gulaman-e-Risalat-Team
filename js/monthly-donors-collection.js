@@ -83,39 +83,65 @@ db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) =>
     window.allDonationsList.push(data);
   });
 
-  renderSummaries(); // Generate Box and Without Box Summaries
+  renderSummaries(); 
   populateDropdowns(); 
   renderTable(); 
 }, (error) => {
   tableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; color: #dc3545; padding: 15px;">Failed to load data: ${error.message}</td></tr>`;
 });
 
-// --- NEW FEATURE: RENDER SUMMARIES ---
+
+// --- DATE RANGE FILTER LOGIC FOR SUMMARIES ---
+document.getElementById("summaryFromMonth").addEventListener("change", renderSummaries);
+document.getElementById("summaryToMonth").addEventListener("change", renderSummaries);
+
+window.clearSummaryFilters = function() {
+  document.getElementById("summaryFromMonth").value = "";
+  document.getElementById("summaryToMonth").value = "";
+  renderSummaries();
+};
+
 function renderSummaries() {
-  // Get all unique monthYears from data and sort them (e.g., "2026-10", "2026-11")
-  const uniqueMonths = [...new Set(window.allDonationsList.map(d => d.monthYear))].filter(Boolean).sort();
+  const fromMonth = document.getElementById("summaryFromMonth").value; // Format: "YYYY-MM"
+  const toMonth = document.getElementById("summaryToMonth").value;
+
+  // Get all unique monthYears from data
+  let uniqueMonths = [...new Set(window.allDonationsList.map(d => d.monthYear))].filter(Boolean).sort();
+
+  // Apply Date Range Filter lexicographically (e.g. "2026-09" <= "2027-11")
+  if (fromMonth) {
+    uniqueMonths = uniqueMonths.filter(m => m >= fromMonth);
+  }
+  if (toMonth) {
+    uniqueMonths = uniqueMonths.filter(m => m <= toMonth);
+  }
 
   let boxData = {};
   let withoutBoxData = {};
 
-  // Group data by DonorType -> DonorName -> Month
+  // Group data by DonorType -> DonorName -> Month (Only for filtered months)
   window.allDonationsList.forEach(d => {
-    // Ignore Rejected records from summary
     if (d.status === "Rejected") return; 
+    // Ignore data outside the selected month range
+    if (!uniqueMonths.includes(d.monthYear)) return;
 
     let target = (d.donorType === "Box") ? boxData : withoutBoxData;
     
     if (!target[d.donorName]) target[d.donorName] = {};
     if (!target[d.donorName][d.monthYear]) target[d.donorName][d.monthYear] = 0;
     
-    target[d.donorName][d.monthYear] += Number(d.amount); // Sum amount if multiple entries exist for same month
+    target[d.donorName][d.monthYear] += Number(d.amount); 
   });
 
-  // Generate Table Headers (S.No, Donor Name, Nov-26, Dec-26...)
+  // Generate Table Headers
   let headerHTML = `<tr><th style="text-align:center;">S.No.</th><th style="text-align:left;">Donor Name</th>`;
-  uniqueMonths.forEach(m => {
-    headerHTML += `<th style="text-align:center;">${formatShortMonthYear(m)}</th>`;
-  });
+  if (uniqueMonths.length === 0) {
+    headerHTML += `<th>No Months Selected/Found</th>`;
+  } else {
+    uniqueMonths.forEach(m => {
+      headerHTML += `<th style="text-align:center;">${formatShortMonthYear(m)}</th>`;
+    });
+  }
   headerHTML += `</tr>`;
 
   document.getElementById("boxSummaryHead").innerHTML = headerHTML;
@@ -124,33 +150,39 @@ function renderSummaries() {
   // Render Box Summary Body
   let boxBodyHTML = "";
   let bIndex = 1;
-  for (const [donorName, monthsObj] of Object.entries(boxData).sort()) {
-    boxBodyHTML += `<tr><td style="text-align:center;">${bIndex++}</td><td style="text-align:left;"><strong style="color:#0056b3;">${donorName}</strong></td>`;
-    uniqueMonths.forEach(m => {
-      let amount = monthsObj[m] ? `<span style="color:#28a745; font-weight:bold;">₹${monthsObj[m]}</span>` : `<span style="color:#ccc;">-</span>`;
-      boxBodyHTML += `<td style="text-align:center;">${amount}</td>`;
-    });
-    boxBodyHTML += `</tr>`;
+  if (Object.keys(boxData).length > 0) {
+    for (const [donorName, monthsObj] of Object.entries(boxData).sort()) {
+      boxBodyHTML += `<tr><td style="text-align:center;">${bIndex++}</td><td style="text-align:left;"><strong style="color:#0056b3;">${donorName}</strong></td>`;
+      uniqueMonths.forEach(m => {
+        let amount = monthsObj[m] ? `<span style="color:#28a745; font-weight:bold;">₹${monthsObj[m]}</span>` : `<span style="color:#ccc;">-</span>`;
+        boxBodyHTML += `<td style="text-align:center;">${amount}</td>`;
+      });
+      boxBodyHTML += `</tr>`;
+    }
+  } else {
+    boxBodyHTML = `<tr><td colspan="${uniqueMonths.length + 2}" style="text-align:center;">No Box Donations found in this range</td></tr>`;
   }
-  if (!boxBodyHTML) boxBodyHTML = `<tr><td colspan="${uniqueMonths.length + 2}" style="text-align:center;">No Box Donations found</td></tr>`;
   document.getElementById("boxSummaryBody").innerHTML = boxBodyHTML;
 
   // Render Without Box Summary Body
   let wBoxBodyHTML = "";
   let wIndex = 1;
-  for (const [donorName, monthsObj] of Object.entries(withoutBoxData).sort()) {
-    wBoxBodyHTML += `<tr><td style="text-align:center;">${wIndex++}</td><td style="text-align:left;"><strong style="color:#0056b3;">${donorName}</strong></td>`;
-    uniqueMonths.forEach(m => {
-      let amount = monthsObj[m] ? `<span style="color:#28a745; font-weight:bold;">₹${monthsObj[m]}</span>` : `<span style="color:#ccc;">-</span>`;
-      wBoxBodyHTML += `<td style="text-align:center;">${amount}</td>`;
-    });
-    wBoxBodyHTML += `</tr>`;
+  if (Object.keys(withoutBoxData).length > 0) {
+    for (const [donorName, monthsObj] of Object.entries(withoutBoxData).sort()) {
+      wBoxBodyHTML += `<tr><td style="text-align:center;">${wIndex++}</td><td style="text-align:left;"><strong style="color:#0056b3;">${donorName}</strong></td>`;
+      uniqueMonths.forEach(m => {
+        let amount = monthsObj[m] ? `<span style="color:#28a745; font-weight:bold;">₹${monthsObj[m]}</span>` : `<span style="color:#ccc;">-</span>`;
+        wBoxBodyHTML += `<td style="text-align:center;">${amount}</td>`;
+      });
+      wBoxBodyHTML += `</tr>`;
+    }
+  } else {
+    wBoxBodyHTML = `<tr><td colspan="${uniqueMonths.length + 2}" style="text-align:center;">No Without Box Donations found in this range</td></tr>`;
   }
-  if (!wBoxBodyHTML) wBoxBodyHTML = `<tr><td colspan="${uniqueMonths.length + 2}" style="text-align:center;">No Without Box Donations found</td></tr>`;
   document.getElementById("withoutBoxSummaryBody").innerHTML = wBoxBodyHTML;
 }
 
-// FILTERING LOGIC
+// FILTERING LOGIC FOR MAIN TABLE
 function renderTable() {
   const filterName = document.getElementById("filterName").value;
   const filterCoord = document.getElementById("filterCoord").value;
@@ -185,7 +217,6 @@ function renderTable() {
         });
       }
 
-      // STATUS BADGE
       let statusBadge = "";
       if (currentStatus === "Pending") {
         statusBadge = `<span style="background:#fff3cd; color:#856404; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold;">⏳ Pending</span>`;
@@ -195,7 +226,6 @@ function renderTable() {
         statusBadge = `<span style="background:#f8d7da; color:#721c24; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold;">❌ Rejected</span>`;
       }
 
-      // STATUS DROPDOWN (Removed Reject)
       const statusDropdown = `
         <select onchange="updateDonationStatus('${data.id}', this.value)" style="padding:4px; font-size:12px; border-radius:4px; border:1px solid #ccc; cursor:pointer; background:#f8f9fa;">
           <option value="Pending" ${currentStatus === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
