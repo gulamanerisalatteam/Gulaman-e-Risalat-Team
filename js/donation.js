@@ -31,7 +31,7 @@ function formatMonthYearString(yyyyMm) {
   return `${months[monthIndex]}-${parts[0]}`;
 }
 
-// 4. FETCH DONORS FROM FIREBASE (New Feature - Only Name)
+// 4. FETCH DONORS FROM FIREBASE (Only Name)
 const donorNameSelect = document.getElementById("donorName");
 const donorTypeSelect = document.getElementById("donorType");
 
@@ -50,7 +50,7 @@ db.collection("monthly_donors_list").orderBy("donorName", "asc").onSnapshot((sna
     option.value = data.donorName; // Database me save hone wala naam
     option.dataset.type = data.donorType; // Auto-fill ke liye type save kiya
     
-    // Yahan sirf naam show hoga (Mobile number hata diya gaya hai)
+    // Yahan sirf naam show hoga (Mobile number nahi dikhega)
     option.innerText = data.donorName; 
     
     donorNameSelect.appendChild(option);
@@ -89,6 +89,7 @@ document.getElementById("donationForm").addEventListener("submit", function(e) {
     donorType: donorType,
     coordinatorName: loggedInUser.fullName, 
     coordinatorMobile: loggedInUser.mobile, 
+    status: "Pending", // YAHAN NAYI LINE JODI GAYI HAI
     timestamp: firebase.firestore.FieldValue.serverTimestamp()
   }).then(() => {
     msgBox.innerText = "";
