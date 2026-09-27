@@ -13,7 +13,10 @@ if (!firebase.apps.length) {
 }
 const db = firebase.firestore();
 
-// 1. Box No. Show/Hide Logic
+// Global object to store data for editing
+window.donorsData = {};
+
+// 1. Box No. Show/Hide Logic (For Add Form)
 const donorTypeSelect = document.getElementById("dType");
 const boxNoContainer = document.getElementById("boxNoContainer");
 const boxNoInput = document.getElementById("dBoxNo");
@@ -69,15 +72,20 @@ const tableBody = document.getElementById("donorListBody");
 
 db.collection("monthly_donors_list").orderBy("addedOn", "desc").onSnapshot((snapshot) => {
   tableBody.innerHTML = ""; 
+  window.donorsData = {}; // Clear global data
   
   if (snapshot.empty) {
-    tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 15px;">No donors added yet.</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 15px;">No donors added yet.</td></tr>`;
     return;
   }
 
   let index = 1;
   snapshot.forEach((doc) => {
     const data = doc.data();
+    const docId = doc.id;
+    
+    // Save data globally for Edit Modal
+    window.donorsData[docId] = data;
     
     // Type Styling
     let typeBadge = data.donorType === "Box" 
@@ -94,10 +102,95 @@ db.collection("monthly_donors_list").orderBy("addedOn", "desc").onSnapshot((snap
         <td>${typeBadge}</td>
         <td>${boxDisplay}</td>
         <td style="font-size: 13px; color: #555;">${data.address || "N/A"}</td>
+        <td style="display: flex; gap: 5px;">
+          <button onclick="openEditModal('${docId}')" style="background: #ffc107; color: black; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight:bold;">✏️ Edit</button>
+          <button onclick="deleteDonor('${docId}')" style="background: #dc3545; color: white; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight:bold;">🗑️ Delete</button>
+        </td>
       </tr>
     `;
     tableBody.innerHTML += row;
   });
 }, (error) => {
-  tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: #dc3545; padding: 15px;">Failed to load data: ${error.message}</td></tr>`;
+  tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: #dc3545; padding: 15px;">Failed to load data: ${error.message}</td></tr>`;
+});
+
+// 4. DELETE LOGIC
+window.deleteDonor = function(docId) {
+  if (confirm("Are you sure you want to delete this donor?")) {
+    db.collection("monthly_donors_list").doc(docId).delete().then(() => {
+      // Firebase onSnapshot apne aap table ko refresh kar dega
+    }).catch((error) => {
+      alert("Error deleting donor: " + error.message);
+    });
+  }
+};
+
+// 5. EDIT LOGIC (Modal Open/Close & Form Submit)
+const editModal = document.getElementById("editModal");
+const eType = document.getElementById("eType");
+const eBoxNoContainer = document.getElementById("eBoxNoContainer");
+const eBoxNo = document.getElementById("eBoxNo");
+
+window.openEditModal = function(docId) {
+  const data = window.donorsData[docId];
+  if(!data) return;
+
+  document.getElementById("eDocId").value = docId;
+  document.getElementById("eType").value = data.donorType;
+  document.getElementById("eName").value = data.donorName;
+  document.getElementById("eMobile").value = data.mobile;
+  document.getElementById("eAddress").value = data.address || "";
+
+  if (data.donorType === "Box") {
+    eBoxNoContainer.style.display = "block";
+    eBoxNo.value = data.boxNo !== "N/A" ? data.boxNo : "";
+    eBoxNo.setAttribute("required", "true");
+  } else {
+    eBoxNoContainer.style.display = "none";
+    eBoxNo.value = "";
+    eBoxNo.removeAttribute("required");
+  }
+
+  editModal.style.display = "flex";
+};
+
+window.closeEditModal = function() {
+  editModal.style.display = "none";
+};
+
+// Edit Box Change Logic
+eType.addEventListener("change", function() {
+  if (this.value === "Box") {
+    eBoxNoContainer.style.display = "block";
+    eBoxNo.setAttribute("required", "true");
+  } else {
+    eBoxNoContainer.style.display = "none";
+    eBoxNo.removeAttribute("required");
+    eBoxNo.value = "";
+  }
+});
+
+// Submit Edited Data
+document.getElementById("editDonorForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const docId = document.getElementById("eDocId").value;
+  const type = eType.value;
+  const boxNo = type === "Box" ? eBoxNo.value : "N/A";
+  const name = document.getElementById("eName").value.trim();
+  const mobile = document.getElementById("eMobile").value.trim();
+  const address = document.getElementById("eAddress").value.trim();
+
+  db.collection("monthly_donors_list").doc(docId).update({
+    donorType: type,
+    boxNo: boxNo,
+    donorName: name,
+    mobile: mobile,
+    address: address
+  }).then(() => {
+    closeEditModal();
+    // Alert lagane ki zarurat nahi, table automatically update ho jayegi onSnapshot ki wajah se
+  }).catch((error) => {
+    alert("Error updating donor: " + error.message);
+  });
 });
