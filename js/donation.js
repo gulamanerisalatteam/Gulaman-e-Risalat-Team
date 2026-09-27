@@ -1,4 +1,4 @@
-// 1. Security Check: Redirect to login if user is not authenticated
+// 1. Security Check
 const loggedInUser = JSON.parse(localStorage.getItem("loggedInCoordinator"));
 
 if (!loggedInUser) {
@@ -21,6 +21,15 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.firestore();
+
+// Helper Function: Date format change karne ke liye (2026-12 -> December-2026)
+function formatMonthYearString(yyyyMm) {
+  if (!yyyyMm || !yyyyMm.includes("-")) return yyyyMm;
+  const parts = yyyyMm.split("-");
+  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const monthIndex = parseInt(parts[1], 10) - 1;
+  return `${months[monthIndex]}-${parts[0]}`;
+}
 
 // 3. Donation Form Submit Event
 document.getElementById("donationForm").addEventListener("submit", function(e) {
@@ -49,9 +58,12 @@ document.getElementById("donationForm").addEventListener("submit", function(e) {
     
     // Receipt me data bharna
     document.getElementById("rName").innerText = donorName;
-    document.getElementById("rMonth").innerText = monthYear;
+    document.getElementById("rMonth").innerText = formatMonthYearString(monthYear); // Format badal diya gaya
     document.getElementById("rAmount").innerText = amount;
     document.getElementById("rType").innerText = donorType;
+    
+    // NAYA: Coordinator ka naam slip me daalna
+    document.getElementById("rCoord").innerText = loggedInUser.fullName;
     
     // Aaj ki Date nikalna
     const today = new Date();
@@ -75,14 +87,9 @@ window.shareReceipt = async function() {
   const receiptElement = document.getElementById("receiptContent");
   
   try {
-    // HTML ko Image Canvas me convert karna
-    const canvas = await html2canvas(receiptElement, { scale: 2 }); // Scale 2 for HD quality
-    
-    // Canvas ko image file (blob) me badalna
+    const canvas = await html2canvas(receiptElement, { scale: 2 }); 
     canvas.toBlob(async (blob) => {
       const file = new File([blob], "Donation_Receipt.png", { type: "image/png" });
-      
-      // Mobile ka share menu open karna (WhatsApp, etc.)
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
@@ -90,7 +97,6 @@ window.shareReceipt = async function() {
           text: "Jazakallah for your donation! Here is your receipt."
         });
       } else {
-        // Agar laptop me hain ya share option nahi hai, to automatically Download ho jayega
         const link = document.createElement("a");
         link.download = "Donation_Receipt.png";
         link.href = canvas.toDataURL("image/png");
