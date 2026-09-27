@@ -17,6 +17,7 @@ const sidebarHTML = `
     <a href="coordinator-details.html" id="nav-coordinator">Coordinator Details</a>
     <a href="monthly-donors.html" id="nav-monthly-donors">Monthly Donors</a>
     <a href="monthly-donors-collection.html" id="nav-collection">Monthly Donors Collection</a> 
+    <a href="assign-donors.html" id="nav-assign">Assign Donors</a>
     
     <button class="logout-btn" onclick="localStorage.removeItem('adminUser'); window.location.href='index.html';">Logout</button>
   </div>
@@ -33,6 +34,8 @@ if (currentPage.includes("coordinator-details.html")) {
   document.getElementById("nav-collection").classList.add("active");
 } else if (currentPage.includes("monthly-donors.html")) { 
   document.getElementById("nav-monthly-donors").classList.add("active");
+} else if (currentPage.includes("assign-donors.html")) { 
+  document.getElementById("nav-assign").classList.add("active");
 } else {
   // Default active tab dashboard rahega
   document.getElementById("nav-dashboard").classList.add("active");
