@@ -52,7 +52,7 @@ document.getElementById("addDonorForm").addEventListener("submit", function(e) {
     donorName: donorName,
     mobile: mobile,
     address: address,
-    addedOn: firebase.firestore.FieldValue.serverTimestamp()
+    addedOn: firebase.firestore.FieldValue.serverTimestamp() // Date saved here
   }).then(() => {
     msgBox.style.color = "#28a745";
     msgBox.innerText = "✅ Donor Added Successfully!";
@@ -75,7 +75,7 @@ db.collection("monthly_donors_list").orderBy("addedOn", "desc").onSnapshot((snap
   window.donorsData = {}; // Clear global data
   
   if (snapshot.empty) {
-    tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 15px;">No donors added yet.</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 15px;">No donors added yet.</td></tr>`;
     return;
   }
 
@@ -87,6 +87,15 @@ db.collection("monthly_donors_list").orderBy("addedOn", "desc").onSnapshot((snap
     // Save data globally for Edit Modal
     window.donorsData[docId] = data;
     
+    // Format Added Date
+    let addedDate = "N/A";
+    if (data.addedOn) {
+      const dateObj = data.addedOn.toDate();
+      addedDate = dateObj.toLocaleDateString("en-IN", { 
+        day: '2-digit', month: 'short', year: 'numeric' 
+      });
+    }
+    
     // Type Styling
     let typeBadge = data.donorType === "Box" 
       ? `<span style="background: #e6f6ea; color: #28a745; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">Box</span>`
@@ -97,6 +106,7 @@ db.collection("monthly_donors_list").orderBy("addedOn", "desc").onSnapshot((snap
     const row = `
       <tr>
         <td>${index++}</td>
+        <td style="font-size: 13px; color: #555; font-weight: bold;">${addedDate}</td> <!-- DATE ADDED -->
         <td><strong style="color: #333;">${data.donorName}</strong></td>
         <td>${data.mobile}</td>
         <td>${typeBadge}</td>
@@ -111,14 +121,14 @@ db.collection("monthly_donors_list").orderBy("addedOn", "desc").onSnapshot((snap
     tableBody.innerHTML += row;
   });
 }, (error) => {
-  tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: #dc3545; padding: 15px;">Failed to load data: ${error.message}</td></tr>`;
+  tableBody.innerHTML = `<tr><td colspan="8" style="text-align:center; color: #dc3545; padding: 15px;">Failed to load data: ${error.message}</td></tr>`;
 });
 
 // 4. DELETE LOGIC
 window.deleteDonor = function(docId) {
   if (confirm("Are you sure you want to delete this donor?")) {
     db.collection("monthly_donors_list").doc(docId).delete().then(() => {
-      // Firebase onSnapshot apne aap table ko refresh kar dega
+      // Firebase onSnapshot will auto refresh
     }).catch((error) => {
       alert("Error deleting donor: " + error.message);
     });
@@ -189,7 +199,6 @@ document.getElementById("editDonorForm").addEventListener("submit", function(e) 
     address: address
   }).then(() => {
     closeEditModal();
-    // Alert lagane ki zarurat nahi, table automatically update ho jayegi onSnapshot ki wajah se
   }).catch((error) => {
     alert("Error updating donor: " + error.message);
   });
