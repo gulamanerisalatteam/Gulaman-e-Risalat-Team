@@ -36,7 +36,17 @@
     <div class="filter-card">
       <div class="filter-group">
         <label>Donor Name</label>
-        <input type="text" id="filterName" placeholder="Search Name...">
+        <select id="filterName">
+          <option value="All">All Donors</option>
+          <!-- Options will be added dynamically -->
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Collected By</label>
+        <select id="filterCoord">
+          <option value="All">All Coordinators</option>
+          <!-- Options will be added dynamically -->
+        </select>
       </div>
       <div class="filter-group">
         <label>Month & Year</label>
@@ -64,7 +74,7 @@
 
     <!-- TABLE SECTION -->
     <div class="table-card" style="overflow-x: auto;">
-      <table style="width: 100%; min-width: 900px;">
+      <table style="width: 100%; min-width: 1000px;">
         <thead>
           <tr>
             <th>S.No.</th>
@@ -72,6 +82,7 @@
             <th>Month & Year</th>
             <th>Amount (₹)</th>
             <th>Donor Type</th>
+            <th>Collected By</th> <!-- NAYA COLUMN -->
             <th>Slip</th>
             <th>Submit Date</th>
             <th>Status</th>
@@ -80,7 +91,7 @@
         </thead>
         <tbody id="donorsTableBody">
           <tr>
-            <td colspan="9" style="text-align: center; padding: 20px; font-weight: bold; color: #555;">Loading data...</td>
+            <td colspan="10" style="text-align: center; padding: 20px; font-weight: bold; color: #555;">Loading data...</td>
           </tr>
         </tbody>
       </table>
