@@ -38,14 +38,12 @@
         <label>Donor Name</label>
         <select id="filterName">
           <option value="All">All Donors</option>
-          <!-- Options will be added dynamically -->
         </select>
       </div>
       <div class="filter-group">
         <label>Collected By</label>
         <select id="filterCoord">
           <option value="All">All Coordinators</option>
-          <!-- Options will be added dynamically -->
         </select>
       </div>
       <div class="filter-group">
@@ -66,7 +64,7 @@
           <option value="All">All Status</option>
           <option value="Pending">Pending</option>
           <option value="Accepted">Accepted</option>
-          <option value="Rejected">Rejected</option>
+          <!-- Reject yahan se hata diya gaya hai -->
         </select>
       </div>
       <button class="btn-clear" onclick="clearFilters()">Clear Filters</button>
@@ -74,7 +72,7 @@
 
     <!-- TABLE SECTION -->
     <div class="table-card" style="overflow-x: auto;">
-      <table style="width: 100%; min-width: 1000px;">
+      <table style="width: 100%; min-width: 1050px;">
         <thead>
           <tr>
             <th>S.No.</th>
@@ -82,16 +80,17 @@
             <th>Month & Year</th>
             <th>Amount (₹)</th>
             <th>Donor Type</th>
-            <th>Collected By</th> <!-- NAYA COLUMN -->
+            <th>Collected By</th>
             <th>Slip</th>
             <th>Submit Date</th>
             <th>Status</th>
             <th>Update Status</th>
+            <th>Action</th> <!-- NAYA COLUMN (DELETE) -->
           </tr>
         </thead>
         <tbody id="donorsTableBody">
           <tr>
-            <td colspan="10" style="text-align: center; padding: 20px; font-weight: bold; color: #555;">Loading data...</td>
+            <td colspan="11" style="text-align: center; padding: 20px; font-weight: bold; color: #555;">Loading data...</td>
           </tr>
         </tbody>
       </table>
