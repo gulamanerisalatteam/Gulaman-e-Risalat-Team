@@ -38,24 +38,20 @@ function populateDropdowns() {
   const filterName = document.getElementById("filterName");
   const filterCoord = document.getElementById("filterCoord");
 
-  // Keep old selected values if any
   const currentName = filterName.value;
   const currentCoord = filterCoord.value;
 
   filterName.innerHTML = `<option value="All">All Donors</option>`;
   filterCoord.innerHTML = `<option value="All">All Coordinators</option>`;
 
-  // Sort and append names
   Array.from(nameSet).sort().forEach(name => {
     filterName.innerHTML += `<option value="${name}">${name}</option>`;
   });
   
-  // Sort and append coordinators
   Array.from(coordSet).sort().forEach(coord => {
     filterCoord.innerHTML += `<option value="${coord}">${coord}</option>`;
   });
 
-  // Restore selection
   if (nameSet.has(currentName)) filterName.value = currentName;
   if (coordSet.has(currentCoord)) filterCoord.value = currentCoord;
 }
@@ -66,7 +62,7 @@ db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) =>
   window.allDonationsList = [];
   
   if (snapshot.empty) {
-    tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding: 15px;">No donations recorded yet.</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding: 15px;">No donations recorded yet.</td></tr>`;
     return;
   }
 
@@ -77,10 +73,10 @@ db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) =>
     window.allDonationsList.push(data);
   });
 
-  populateDropdowns(); // Fill Dropdowns
-  renderTable(); // Render Table
+  populateDropdowns(); 
+  renderTable(); 
 }, (error) => {
-  tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center; color: #dc3545; padding: 15px;">Failed to load data: ${error.message}</td></tr>`;
+  tableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; color: #dc3545; padding: 15px;">Failed to load data: ${error.message}</td></tr>`;
 });
 
 // FILTERING LOGIC
@@ -99,7 +95,6 @@ function renderTable() {
     const currentStatus = data.status || "Pending";
     const currentCoord = data.coordinatorName || "N/A";
 
-    // Filter Conditions Check
     const matchName = filterName === "All" || data.donorName === filterName;
     const matchCoord = filterCoord === "All" || currentCoord === filterCoord;
     const matchMonth = filterMonth === "" || data.monthYear === filterMonth;
@@ -125,16 +120,15 @@ function renderTable() {
         statusBadge = `<span style="background:#fff3cd; color:#856404; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold;">⏳ Pending</span>`;
       } else if (currentStatus === "Accepted") {
         statusBadge = `<span style="background:#d4edda; color:#155724; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold;">✅ Accepted</span>`;
-      } else if (currentStatus === "Rejected") {
+      } else if (currentStatus === "Rejected") { // Purane data ke liye fallback
         statusBadge = `<span style="background:#f8d7da; color:#721c24; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold;">❌ Rejected</span>`;
       }
 
-      // STATUS DROPDOWN
+      // STATUS DROPDOWN (Removed Reject)
       const statusDropdown = `
         <select onchange="updateDonationStatus('${data.id}', this.value)" style="padding:4px; font-size:12px; border-radius:4px; border:1px solid #ccc; cursor:pointer; background:#f8f9fa;">
           <option value="Pending" ${currentStatus === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
           <option value="Accepted" ${currentStatus === 'Accepted' ? 'selected' : ''}>✅ Accept</option>
-          <option value="Rejected" ${currentStatus === 'Rejected' ? 'selected' : ''}>❌ Reject</option>
         </select>
       `;
 
@@ -145,13 +139,16 @@ function renderTable() {
           <td>${displayMonthYear}</td>
           <td style="color: #28a745; font-weight: bold;">₹ ${data.amount}</td>
           <td><span style="background: #e6f6ea; color: #28a745; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">${data.donorType}</span></td>
-          <td><strong style="color: #555;">${currentCoord}</strong></td> <!-- NAYA COLUMN: Collected By -->
+          <td><strong style="color: #555;">${currentCoord}</strong></td>
           <td>
             <button onclick="openSlipModal('${data.id}')" style="background: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight:bold;">View Slip</button>
           </td>
           <td style="font-size: 13px; color: #555;">${submitDate}</td>
           <td>${statusBadge}</td>
           <td>${statusDropdown}</td>
+          <td>
+            <button onclick="deleteDonation('${data.id}')" style="background: #dc3545; color: white; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight:bold;">🗑️ Delete</button>
+          </td>
         </tr>
       `;
       tableBody.innerHTML += row;
@@ -159,38 +156,48 @@ function renderTable() {
   });
 
   if (!hasVisibleRows) {
-    tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding: 15px; font-weight:bold; color:#dc3545;">No matching records found.</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding: 15px; font-weight:bold; color:#dc3545;">No matching records found.</td></tr>`;
   }
 }
 
-// EVENT LISTENERS FOR FILTERS (Auto-Filter on change)
+// EVENT LISTENERS FOR FILTERS
 document.getElementById("filterName").addEventListener("change", renderTable);
-document.getElementById("filterCoord").addEventListener("change", renderTable); // NAYA FILTER
+document.getElementById("filterCoord").addEventListener("change", renderTable); 
 document.getElementById("filterMonth").addEventListener("change", renderTable);
 document.getElementById("filterType").addEventListener("change", renderTable);
 document.getElementById("filterStatus").addEventListener("change", renderTable);
 
-// CLEAR FILTERS FUNCTION
+// CLEAR FILTERS
 window.clearFilters = function() {
   document.getElementById("filterName").value = "All";
-  document.getElementById("filterCoord").value = "All"; // CLEAR COORD FILTER
+  document.getElementById("filterCoord").value = "All"; 
   document.getElementById("filterMonth").value = "";
   document.getElementById("filterType").value = "All";
   document.getElementById("filterStatus").value = "All";
   renderTable(); 
 };
 
-// STATUS UPDATE FUNCTION IN DATABASE
+// STATUS UPDATE 
 window.updateDonationStatus = function(docId, newStatus) {
   if(confirm(`Are you sure you want to mark this donation as ${newStatus}?`)) {
     db.collection("donations").doc(docId).update({
       status: newStatus
-    }).then(() => {
     }).catch((error) => {
       alert("Error updating status: " + error.message);
     });
   } else {
     renderTable();
+  }
+};
+
+// DELETE DONATION RECORD (Naya Feature)
+window.deleteDonation = function(docId) {
+  if(confirm("Are you sure you want to permanently delete this donation record? This action cannot be undone.")) {
+    db.collection("donations").doc(docId).delete().then(() => {
+      // Record delete hote hi table apne aap refresh ho jayegi
+    }).catch((error) => {
+      alert("Error deleting record: " + error.message);
+    });
   }
 };
 
