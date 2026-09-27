@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monthly Donors - Admin Panel</title>
+  
+  <link rel="stylesheet" href="css/admin.css">
+
+  <style>
+    /* Form Styling */
+    .form-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
+    .form-card label { font-weight: bold; color: #333; margin-top: 10px; display: block; font-size: 14px; }
+    .form-card input, .form-card select, .form-card textarea { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
+    .btn-submit { background: #0056b3; color: white; border: none; padding: 12px 20px; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    .btn-submit:hover { background: #004494; }
+    .msg-box { font-weight: bold; margin-top: 15px; }
+  </style>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <!-- LEFT SIDEBAR -->
+  <div id="sidebar-container"></div>
+
+  <!-- RIGHT MAIN CONTENT -->
+  <div class="main-content">
+    <h1 class="page-title">Monthly Donors</h1>
+
+    <!-- 1. Add Donor Form -->
+    <div class="form-card">
+      <h3 style="margin-top: 0; color: #0056b3; border-bottom: 2px solid #f1f1f1; padding-bottom: 10px;">➕ Add New Donor</h3>
+      <form id="addDonorForm">
+        
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 250px;">
+            <label>Donor Type *</label>
+            <select id="dType" required>
+              <option value="" disabled selected>Select Type</option>
+              <option value="Box">Box</option>
+              <option value="Without Box">Without Box</option>
+            </select>
+          </div>
+
+          <div style="flex: 1; min-width: 250px; display: none;" id="boxNoContainer">
+            <label>Box No. *</label>
+            <input type="text" id="dBoxNo" placeholder="Enter Box Number">
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 250px;">
+            <label>Donor Name *</label>
+            <input type="text" id="dName" placeholder="Enter Donor's Full Name" required>
+          </div>
+
+          <div style="flex: 1; min-width: 250px;">
+            <label>Mobile Number *</label>
+            <input type="number" id="dMobile" placeholder="Enter 10-digit Mobile Number" required>
+          </div>
+        </div>
+
+        <label>Address</label>
+        <textarea id="dAddress" rows="2" placeholder="Enter Full Address"></textarea>
+
+        <button type="submit" class="btn-submit">Save Donor</button>
+      </form>
+      <div id="statusMsg" class="msg-box"></div>
+    </div>
+
+    <!-- 2. Donors List Table -->
+    <div class="table-card" style="overflow-x: auto;">
+      <h3 style="margin-top: 0; color: #0056b3; border-bottom: 2px solid #f1f1f1; padding-bottom: 10px; margin-bottom: 15px;">📋 All Monthly Donors</h3>
+      <table style="width: 100%; min-width: 800px;">
+        <thead>
+          <tr>
+            <th>S.No.</th>
+            <th>Name</th>
+            <th>Mobile Number</th>
+            <th>Donor Type</th>
+            <th>Box No.</th>
+            <th>Address</th>
+          </tr>
+        </thead>
+        <tbody id="donorListBody">
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 20px; font-weight: bold; color: #555;">Loading donors...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script src="js/sidebar.js"></script>
+  <script src="js/monthly-donors.js"></script>
+</body>
+</html>
