@@ -22,7 +22,7 @@ if (!firebase.apps.length) {
 }
 const db = firebase.firestore();
 
-// Helper Function: Date format change karne ke liye (2026-12 -> December-2026)
+// 3. Date format helper
 function formatMonthYearString(yyyyMm) {
   if (!yyyyMm || !yyyyMm.includes("-")) return yyyyMm;
   const parts = yyyyMm.split("-");
@@ -31,7 +31,44 @@ function formatMonthYearString(yyyyMm) {
   return `${months[monthIndex]}-${parts[0]}`;
 }
 
-// 3. Donation Form Submit Event
+// 4. FETCH DONORS FROM FIREBASE (New Feature)
+const donorNameSelect = document.getElementById("donorName");
+const donorTypeSelect = document.getElementById("donorType");
+
+db.collection("monthly_donors_list").orderBy("donorName", "asc").onSnapshot((snapshot) => {
+  donorNameSelect.innerHTML = `<option value="" disabled selected>Select Donor</option>`;
+  
+  if (snapshot.empty) {
+    donorNameSelect.innerHTML = `<option value="" disabled selected>No Donors Found</option>`;
+    return;
+  }
+
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    const option = document.createElement("option");
+    
+    option.value = data.donorName; // Database me save hone wala naam
+    option.dataset.type = data.donorType; // Auto-fill ke liye type save kiya
+    
+    // Naam ke aage mobile number dikhayenge taaki ek jaise naam walo me confusion na ho
+    option.innerText = `${data.donorName} (${data.mobile})`; 
+    
+    donorNameSelect.appendChild(option);
+  });
+}, (error) => {
+  donorNameSelect.innerHTML = `<option value="" disabled selected>Error loading donors</option>`;
+});
+
+// SMART AUTO-FILL: Jaise hi naam select hoga, Type apne aap fill ho jayega
+donorNameSelect.addEventListener("change", function() {
+  const selectedOption = this.options[this.selectedIndex];
+  const type = selectedOption.dataset.type;
+  if (type) {
+    donorTypeSelect.value = type;
+  }
+});
+
+// 5. Donation Form Submit Event
 document.getElementById("donationForm").addEventListener("submit", function(e) {
   e.preventDefault();
 
@@ -56,24 +93,18 @@ document.getElementById("donationForm").addEventListener("submit", function(e) {
   }).then(() => {
     msgBox.innerText = "";
     
-    // Receipt me data bharna
     document.getElementById("rName").innerText = donorName;
-    document.getElementById("rMonth").innerText = formatMonthYearString(monthYear); // Format badal diya gaya
+    document.getElementById("rMonth").innerText = formatMonthYearString(monthYear); 
     document.getElementById("rAmount").innerText = amount;
     document.getElementById("rType").innerText = donorType;
-    
-    // NAYA: Coordinator ka naam slip me daalna
     document.getElementById("rCoord").innerText = loggedInUser.fullName;
     
-    // Aaj ki Date nikalna
     const today = new Date();
     document.getElementById("rDate").innerText = today.toLocaleDateString("en-IN");
 
-    // Form hide karna aur Receipt show karna
     document.getElementById("formCard").style.display = "none";
     document.getElementById("receiptCard").style.display = "block";
     
-    // Agli entry ke liye form clear kar dena
     document.getElementById("donationForm").reset();
 
   }).catch((error) => {
@@ -82,10 +113,9 @@ document.getElementById("donationForm").addEventListener("submit", function(e) {
   });
 });
 
-// 4. Share Receipt Image Function
+// 6. Share Receipt Image Function
 window.shareReceipt = async function() {
   const receiptElement = document.getElementById("receiptContent");
-  
   try {
     const canvas = await html2canvas(receiptElement, { scale: 2 }); 
     canvas.toBlob(async (blob) => {
@@ -108,13 +138,13 @@ window.shareReceipt = async function() {
   }
 };
 
-// 5. Naya Form Kholna
+// 7. Show Form Again
 window.showFormAgain = function() {
   document.getElementById("receiptCard").style.display = "none";
   document.getElementById("formCard").style.display = "block";
 };
 
-// 6. Logout Function
+// 8. Logout Function
 window.logoutCoordinator = function() {
   localStorage.removeItem("loggedInCoordinator");
   window.location.href = "index.html"; 
