@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assign Donors - Admin Panel</title>
+  <link rel="stylesheet" href="css/admin.css">
+  <style>
+    .form-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
+    .form-card label { font-weight: bold; color: #333; margin-top: 10px; display: block; font-size: 14px; }
+    .form-card select { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
+    .btn-submit { background: #0056b3; color: white; border: none; padding: 12px 20px; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    .btn-submit:hover { background: #004494; }
+  </style>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <!-- LEFT SIDEBAR -->
+  <div id="sidebar-container"></div>
+
+  <!-- RIGHT MAIN CONTENT -->
+  <div class="main-content">
+    <h1 class="page-title">Assign Donors to Coordinators</h1>
+
+    <div class="form-card">
+      <form id="assignForm">
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 250px;">
+            <label>Select Coordinator *</label>
+            <select id="coordSelect" required>
+              <option value="" disabled selected>Loading...</option>
+            </select>
+          </div>
+          <div style="flex: 1; min-width: 250px;">
+            <label>Select Donor *</label>
+            <select id="donorSelect" required>
+              <option value="" disabled selected>Loading...</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn-submit">Assign Donor</button>
+      </form>
+      <div id="statusMsg" style="margin-top: 15px; font-weight: bold;"></div>
+    </div>
+
+    <!-- Assigned Donors Table -->
+    <div class="table-card" style="overflow-x: auto;">
+      <h3 style="margin-top: 0; color: #0056b3; border-bottom: 2px solid #f1f1f1; padding-bottom: 10px; margin-bottom: 15px;">📋 Assigned Donors List</h3>
+      <table style="width: 100%; min-width: 800px;">
+        <thead>
+          <tr>
+            <th>S.No.</th>
+            <th>Donor Name</th>
+            <th>Mobile Number</th>
+            <th>Assigned Coordinator</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="assignedTableBody">
+          <tr>
+            <td colspan="5" style="text-align: center; padding: 20px;">Loading data...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="js/sidebar.js"></script>
+  <script src="js/assign-donors.js"></script>
+</body>
+</html>
