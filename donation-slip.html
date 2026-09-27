@@ -71,7 +71,7 @@
     <button class="logout-btn" onclick="logoutCoordinator()">Logout</button>
   </div>
 
-  <!-- 1. Form Card (Ye shuru me dikhega) -->
+  <!-- 1. Form Card -->
   <div class="card" id="formCard" style="margin-top: 30px; margin-bottom: 30px;">
     <div class="logo-box">
       <img src="images/logo.png" alt="Logo" class="app-logo" style="width: 80px;">
@@ -101,10 +101,9 @@
     <div id="donationMsg" class="error-msg" style="margin-top: 15px; text-align: center; font-weight: bold;"></div>
   </div>
 
-  <!-- 2. Receipt Card (Submit hone ke baad ye dikhega, abhi chhupa hua hai) -->
+  <!-- 2. Receipt Card -->
   <div class="card" id="receiptCard" style="display: none; margin-top: 30px; margin-bottom: 30px;">
     
-    <!-- Jis hisse ki image banegi wo yahan hai -->
     <div id="receiptContent" class="receipt-box">
       <div style="text-align: center; margin-bottom: 15px;">
         <img src="images/logo.png" alt="Logo" style="width: 60px;">
@@ -124,6 +123,12 @@
       <div class="receipt-row">
         <strong>Type:</strong> <span id="rType"></span>
       </div>
+      
+      <!-- NAYA COLUMN: Collected By -->
+      <div class="receipt-row">
+        <strong>Collected By:</strong> <span id="rCoord"></span>
+      </div>
+
       <div class="receipt-row">
         <strong>Date:</strong> <span id="rDate"></span>
       </div>
@@ -139,7 +144,6 @@
     </div>
   </div>
 
-  <!-- Javascript File Link -->
   <script src="js/donation.js"></script>
 </body>
 </html>
