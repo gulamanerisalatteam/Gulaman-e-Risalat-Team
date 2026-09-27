@@ -14,10 +14,8 @@ if (!firebase.apps.length) {
 const db = firebase.firestore();
 const tableBody = document.getElementById("donorsTableBody");
 
-// Global object to store data temporarily for the slip modal
 window.donationsData = {};
 
-// Helper Function: Convert '2026-11' to 'November-2026'
 function formatMonthYearString(yyyyMm) {
   if (!yyyyMm || !yyyyMm.includes("-")) return yyyyMm;
   const parts = yyyyMm.split("-");
@@ -32,7 +30,7 @@ db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) =>
   window.donationsData = {}; 
   
   if (snapshot.empty) {
-    tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 15px;">No donations recorded yet.</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 15px;">No donations recorded yet.</td></tr>`;
     return;
   }
 
@@ -40,7 +38,6 @@ db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) =>
   snapshot.forEach((doc) => {
     const data = doc.data();
     const docId = doc.id;
-    
     window.donationsData[docId] = data;
 
     const displayMonthYear = formatMonthYearString(data.monthYear);
@@ -54,6 +51,26 @@ db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) =>
       });
     }
 
+    // STATUS BADGE LOGIC
+    const currentStatus = data.status || "Pending"; // Agar purane data me status nahi hai to Pending manega
+    let statusBadge = "";
+    if (currentStatus === "Pending") {
+      statusBadge = `<span style="background:#fff3cd; color:#856404; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold;">⏳ Pending</span>`;
+    } else if (currentStatus === "Accepted") {
+      statusBadge = `<span style="background:#d4edda; color:#155724; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold;">✅ Accepted</span>`;
+    } else if (currentStatus === "Rejected") {
+      statusBadge = `<span style="background:#f8d7da; color:#721c24; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold;">❌ Rejected</span>`;
+    }
+
+    // DROPDOWN LOGIC FOR ADMIN
+    const statusDropdown = `
+      <select onchange="updateDonationStatus('${docId}', this.value)" style="padding:4px; font-size:12px; border-radius:4px; border:1px solid #ccc; cursor:pointer; background:#f8f9fa;">
+        <option value="Pending" ${currentStatus === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
+        <option value="Accepted" ${currentStatus === 'Accepted' ? 'selected' : ''}>✅ Accept</option>
+        <option value="Rejected" ${currentStatus === 'Rejected' ? 'selected' : ''}>❌ Reject</option>
+      </select>
+    `;
+
     const row = `
       <tr>
         <td>${index++}</td>
@@ -65,13 +82,31 @@ db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) =>
           <button onclick="openSlipModal('${docId}')" style="background: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight:bold;">View Slip</button>
         </td>
         <td style="font-size: 13px; color: #555;">${submitDate}</td>
+        <td>${statusBadge}</td>
+        <td>${statusDropdown}</td>
       </tr>
     `;
     tableBody.innerHTML += row;
   });
 }, (error) => {
-  tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: #dc3545; padding: 15px;">Failed to load data: ${error.message}</td></tr>`;
+  tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: #dc3545; padding: 15px;">Failed to load data: ${error.message}</td></tr>`;
 });
+
+// STATUS UPDATE FUNCTION IN DATABASE
+window.updateDonationStatus = function(docId, newStatus) {
+  if(confirm(`Are you sure you want to mark this donation as ${newStatus}?`)) {
+    db.collection("donations").doc(docId).update({
+      status: newStatus
+    }).then(() => {
+      // Firebase apne aap real-time me table refresh kar dega
+    }).catch((error) => {
+      alert("Error updating status: " + error.message);
+    });
+  } else {
+    // Agar cancel kiya, toh purani value wapas laane ke liye thodi der me data reload ho jayega
+    window.location.reload(); 
+  }
+};
 
 // --- SLIP MODAL FUNCTIONS ---
 window.openSlipModal = function(docId) {
@@ -84,11 +119,10 @@ window.openSlipModal = function(docId) {
   document.getElementById("mType").innerText = data.donorType;
   document.getElementById("mCoord").innerText = data.coordinatorName || "N/A"; 
 
-  // NAYA: Slip modal me Date set karna
   let modalDate = "N/A";
   if (data.timestamp) {
     const dateObj = data.timestamp.toDate();
-    modalDate = dateObj.toLocaleDateString("en-IN"); // Sirf Date (e.g. 27/9/2026)
+    modalDate = dateObj.toLocaleDateString("en-IN");
   }
   document.getElementById("mDate").innerText = modalDate;
 
