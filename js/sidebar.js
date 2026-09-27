@@ -1,15 +1,12 @@
 // Sidebar aur Mobile Menu ka HTML
 const sidebarHTML = `
-  <!-- Mobile Header -->
   <div class="mobile-header">
     <h3 style="color: #0056b3; margin: 0; font-size: 18px; font-weight: bold;">Admin Panel</h3>
     <button class="menu-toggle" id="menuToggleBtn">☰ Menu</button>
   </div>
-
-  <!-- Dark Overlay -->
+  
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-  <!-- Main Sidebar -->
+  
   <div class="sidebar" id="mainSidebar">
     <div class="sidebar-logo-box">
       <img src="images/logo.png" alt="Team Logo">
@@ -18,9 +15,8 @@ const sidebarHTML = `
     
     <a href="dashboard.html" id="nav-dashboard">Dashboard</a>
     <a href="coordinator-details.html" id="nav-coordinator">Coordinator Details</a>
-    
-    <!-- Yahan Name aur Link dono update kar diye gaye hain -->
-    <a href="monthly-donors-collection.html" id="nav-donors">Monthly Donors Collection</a> 
+    <a href="monthly-donors.html" id="nav-monthly-donors">Monthly Donors</a>
+    <a href="monthly-donors-collection.html" id="nav-collection">Monthly Donors Collection</a> 
     
     <button class="logout-btn" onclick="localStorage.removeItem('adminUser'); window.location.href='index.html';">Logout</button>
   </div>
@@ -33,9 +29,12 @@ document.getElementById("sidebar-container").innerHTML = sidebarHTML;
 const currentPage = window.location.pathname;
 if (currentPage.includes("coordinator-details.html")) {
   document.getElementById("nav-coordinator").classList.add("active");
-} else if (currentPage.includes("monthly-donors-collection.html")) { // Yahan bhi link update kiya hai
-  document.getElementById("nav-donors").classList.add("active");
+} else if (currentPage.includes("monthly-donors-collection.html")) { 
+  document.getElementById("nav-collection").classList.add("active");
+} else if (currentPage.includes("monthly-donors.html")) { 
+  document.getElementById("nav-monthly-donors").classList.add("active");
 } else {
+  // Default active tab dashboard rahega
   document.getElementById("nav-dashboard").classList.add("active");
 }
 
