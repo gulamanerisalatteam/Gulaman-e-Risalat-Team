@@ -81,7 +81,9 @@
     
     <form id="donationForm">
       <label>Donator Name:</label>
-      <input type="text" id="donorName" placeholder="Enter Full Name" required>
+<select id="donorName" required>
+  <option value="" disabled selected>Loading Donors...</option>
+</select>
 
       <label>Month and Year:</label>
       <input type="month" id="monthYear" required>
