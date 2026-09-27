@@ -25,12 +25,30 @@ function formatMonthYearString(yyyyMm) {
   return `${months[monthIndex]}-${parts[0]}`;
 }
 
-// Convert "2026-11" to "Nov-26" for Summary Headers
+// Convert "2026-11" to "Nov-26"
 function formatShortMonthYear(yyyyMm) {
   if (!yyyyMm || !yyyyMm.includes("-")) return yyyyMm;
   const parts = yyyyMm.split("-");
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   return `${months[parseInt(parts[1], 10) - 1]}-${parts[0].slice(-2)}`;
+}
+
+// Generate all months between a start and end range (e.g. 2026-10 to 2027-08)
+function generateMonthRange(start, end) {
+  let months = [];
+  let [startYear, startMonth] = start.split('-').map(Number);
+  let [endYear, endMonth] = end.split('-').map(Number);
+  
+  let curr = new Date(startYear, startMonth - 1, 1);
+  let endDate = new Date(endYear, endMonth - 1, 1);
+  
+  while (curr <= endDate) {
+    let y = curr.getFullYear();
+    let m = (curr.getMonth() + 1).toString().padStart(2, '0');
+    months.push(`${y}-${m}`);
+    curr.setMonth(curr.getMonth() + 1);
+  }
+  return months;
 }
 
 // Populate Dropdowns Dynamically
@@ -64,14 +82,12 @@ function populateDropdowns() {
   if (coordSet.has(currentCoord)) filterCoord.value = currentCoord;
 }
 
-// --- NEW: LOAD SAVED DATES ON PAGE LOAD ---
 function loadSavedSummaryDates() {
   const savedFrom = localStorage.getItem("summaryFromMonth");
   const savedTo = localStorage.getItem("summaryToMonth");
   if (savedFrom) document.getElementById("summaryFromMonth").value = savedFrom;
   if (savedTo) document.getElementById("summaryToMonth").value = savedTo;
 }
-// Page load hote hi purani dates input box me daal do
 loadSavedSummaryDates();
 
 // Fetch live Donations Data
@@ -100,27 +116,22 @@ db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) =>
   tableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; color: #dc3545; padding: 15px;">Failed to load data: ${error.message}</td></tr>`;
 });
 
-
-// --- DATE RANGE FILTER LOGIC FOR SUMMARIES (UPDATED WITH LOCALSTORAGE) ---
-
+// --- DATE RANGE FILTER LOGIC FOR SUMMARIES ---
 document.getElementById("summaryFromMonth").addEventListener("change", function() {
-  localStorage.setItem("summaryFromMonth", this.value); // Data save kiya
+  localStorage.setItem("summaryFromMonth", this.value);
   renderSummaries();
 });
 
 document.getElementById("summaryToMonth").addEventListener("change", function() {
-  localStorage.setItem("summaryToMonth", this.value); // Data save kiya
+  localStorage.setItem("summaryToMonth", this.value);
   renderSummaries();
 });
 
 window.clearSummaryFilters = function() {
   document.getElementById("summaryFromMonth").value = "";
   document.getElementById("summaryToMonth").value = "";
-  
-  // Local storage se bhi data mita do
   localStorage.removeItem("summaryFromMonth");
   localStorage.removeItem("summaryToMonth");
-  
   renderSummaries();
 };
 
@@ -128,81 +139,90 @@ function renderSummaries() {
   const fromMonth = document.getElementById("summaryFromMonth").value;
   const toMonth = document.getElementById("summaryToMonth").value;
 
-  // Get all unique monthYears from data
-  let uniqueMonths = [...new Set(window.allDonationsList.map(d => d.monthYear))].filter(Boolean).sort();
+  let displayMonths = [];
+  let dataMonths = [...new Set(window.allDonationsList.map(d => d.monthYear))].filter(Boolean).sort();
 
-  // Apply Date Range Filter lexicographically
-  if (fromMonth) {
-    uniqueMonths = uniqueMonths.filter(m => m >= fromMonth);
-  }
-  if (toMonth) {
-    uniqueMonths = uniqueMonths.filter(m => m <= toMonth);
+  // Decide display months based on selected range
+  if (fromMonth && toMonth) {
+    displayMonths = generateMonthRange(fromMonth, toMonth);
+  } else if (fromMonth) {
+    let maxM = dataMonths.length > 0 ? dataMonths[dataMonths.length - 1] : fromMonth;
+    if (maxM < fromMonth) maxM = fromMonth;
+    displayMonths = generateMonthRange(fromMonth, maxM);
+  } else if (toMonth) {
+    let minM = dataMonths.length > 0 ? dataMonths[0] : toMonth;
+    if (minM > toMonth) minM = toMonth;
+    displayMonths = generateMonthRange(minM, toMonth);
+  } else {
+    displayMonths = dataMonths;
   }
 
   let boxData = {};
   let withoutBoxData = {};
 
-  // Group data by DonorType -> DonorName -> Month (Only for filtered months)
   window.allDonationsList.forEach(d => {
     if (d.status === "Rejected") return; 
-    // Ignore data outside the selected month range
-    if (!uniqueMonths.includes(d.monthYear)) return;
+    if (fromMonth && toMonth && !displayMonths.includes(d.monthYear)) return;
 
     let target = (d.donorType === "Box") ? boxData : withoutBoxData;
     
     if (!target[d.donorName]) target[d.donorName] = {};
-    if (!target[d.donorName][d.monthYear]) target[d.donorName][d.monthYear] = 0;
+    if (!target[d.donorName][d.monthYear]) {
+      target[d.donorName][d.monthYear] = { amount: 0, status: d.status || "Pending" };
+    }
     
-    target[d.donorName][d.monthYear] += Number(d.amount); 
+    target[d.donorName][d.monthYear].amount += Number(d.amount); 
+    target[d.donorName][d.monthYear].status = d.status || "Pending"; 
   });
 
-  // Generate Table Headers
+  // Generate Table Headers (Added 'Total' column at the end)
   let headerHTML = `<tr><th style="text-align:center;">S.No.</th><th style="text-align:left;">Donor Name</th>`;
-  if (uniqueMonths.length === 0) {
-    headerHTML += `<th>No Months Selected/Found</th>`;
+  if (displayMonths.length === 0) {
+    headerHTML += `<th>No Months Found</th></tr>`;
   } else {
-    uniqueMonths.forEach(m => {
+    displayMonths.forEach(m => {
       headerHTML += `<th style="text-align:center;">${formatShortMonthYear(m)}</th>`;
     });
+    headerHTML += `<th style="text-align:center; color: #d32f2f; font-weight: bold; font-size: 15px;">Total</th></tr>`;
   }
-  headerHTML += `</tr>`;
 
   document.getElementById("boxSummaryHead").innerHTML = headerHTML;
   document.getElementById("withoutBoxSummaryHead").innerHTML = headerHTML;
 
-  // Render Box Summary Body
-  let boxBodyHTML = "";
-  let bIndex = 1;
-  if (Object.keys(boxData).length > 0) {
-    for (const [donorName, monthsObj] of Object.entries(boxData).sort()) {
-      boxBodyHTML += `<tr><td style="text-align:center;">${bIndex++}</td><td style="text-align:left;"><strong style="color:#0056b3;">${donorName}</strong></td>`;
-      uniqueMonths.forEach(m => {
-        let amount = monthsObj[m] ? `<span style="color:#28a745; font-weight:bold;">₹${monthsObj[m]}</span>` : `<span style="color:#ccc;">-</span>`;
-        boxBodyHTML += `<td style="text-align:center;">${amount}</td>`;
-      });
-      boxBodyHTML += `</tr>`;
-    }
-  } else {
-    boxBodyHTML = `<tr><td colspan="${uniqueMonths.length + 2}" style="text-align:center;">No Box Donations found in this range</td></tr>`;
-  }
-  document.getElementById("boxSummaryBody").innerHTML = boxBodyHTML;
+  // Function to build table body row with Status check and Total sum
+  function buildTableRows(dataObj, monthArray, emptyMsg) {
+    let bodyHTML = "";
+    let sIndex = 1;
 
-  // Render Without Box Summary Body
-  let wBoxBodyHTML = "";
-  let wIndex = 1;
-  if (Object.keys(withoutBoxData).length > 0) {
-    for (const [donorName, monthsObj] of Object.entries(withoutBoxData).sort()) {
-      wBoxBodyHTML += `<tr><td style="text-align:center;">${wIndex++}</td><td style="text-align:left;"><strong style="color:#0056b3;">${donorName}</strong></td>`;
-      uniqueMonths.forEach(m => {
-        let amount = monthsObj[m] ? `<span style="color:#28a745; font-weight:bold;">₹${monthsObj[m]}</span>` : `<span style="color:#ccc;">-</span>`;
-        wBoxBodyHTML += `<td style="text-align:center;">${amount}</td>`;
-      });
-      wBoxBodyHTML += `</tr>`;
+    if (Object.keys(dataObj).length > 0) {
+      for (const [donorName, monthsObj] of Object.entries(dataObj).sort()) {
+        let rowTotal = 0;
+        bodyHTML += `<tr><td style="text-align:center;">${sIndex++}</td><td style="text-align:left;"><strong style="color:#0056b3;">${donorName}</strong></td>`;
+        
+        monthArray.forEach(m => {
+          if (monthsObj[m]) {
+            if (monthsObj[m].status === "Accepted") {
+              bodyHTML += `<td style="text-align:center;"><span style="color:#28a745; font-weight:bold;">₹${monthsObj[m].amount}</span></td>`;
+              rowTotal += monthsObj[m].amount; // Sum only Accepted amount
+            } else {
+              bodyHTML += `<td style="text-align:center;"><span style="color:#ff9800; font-weight:bold; font-size:13px;">Pending</span></td>`;
+            }
+          } else {
+            bodyHTML += `<td style="text-align:center; color:#ccc;">-</td>`;
+          }
+        });
+        
+        // Append Total column
+        bodyHTML += `<td style="text-align:center; background:#fff3f3; border-left:2px solid #ffcdd2;"><strong style="color:#d32f2f; font-size:14px;">₹${rowTotal}</strong></td></tr>`;
+      }
+    } else {
+      bodyHTML = `<tr><td colspan="${monthArray.length + 3}" style="text-align:center;">${emptyMsg}</td></tr>`;
     }
-  } else {
-    wBoxBodyHTML = `<tr><td colspan="${uniqueMonths.length + 2}" style="text-align:center;">No Without Box Donations found in this range</td></tr>`;
+    return bodyHTML;
   }
-  document.getElementById("withoutBoxSummaryBody").innerHTML = wBoxBodyHTML;
+
+  document.getElementById("boxSummaryBody").innerHTML = buildTableRows(boxData, displayMonths, "No Box Donations found in this range");
+  document.getElementById("withoutBoxSummaryBody").innerHTML = buildTableRows(withoutBoxData, displayMonths, "No Without Box Donations found in this range");
 }
 
 // FILTERING LOGIC FOR MAIN TABLE
@@ -284,14 +304,12 @@ function renderTable() {
   }
 }
 
-// EVENT LISTENERS FOR FILTERS
 document.getElementById("filterName").addEventListener("change", renderTable);
 document.getElementById("filterCoord").addEventListener("change", renderTable); 
 document.getElementById("filterMonth").addEventListener("change", renderTable);
 document.getElementById("filterType").addEventListener("change", renderTable);
 document.getElementById("filterStatus").addEventListener("change", renderTable);
 
-// CLEAR FILTERS
 window.clearFilters = function() {
   document.getElementById("filterName").value = "All";
   document.getElementById("filterCoord").value = "All"; 
@@ -301,7 +319,6 @@ window.clearFilters = function() {
   renderTable(); 
 };
 
-// STATUS UPDATE 
 window.updateDonationStatus = function(docId, newStatus) {
   if(confirm(`Are you sure you want to mark this donation as ${newStatus}?`)) {
     db.collection("donations").doc(docId).update({
@@ -314,7 +331,6 @@ window.updateDonationStatus = function(docId, newStatus) {
   }
 };
 
-// DELETE DONATION RECORD
 window.deleteDonation = function(docId) {
   if(confirm("Are you sure you want to permanently delete this donation record? This action cannot be undone.")) {
     db.collection("donations").doc(docId).delete().then(() => {
@@ -324,7 +340,6 @@ window.deleteDonation = function(docId) {
   }
 };
 
-// --- SLIP MODAL FUNCTIONS ---
 window.openSlipModal = function(docId) {
   const data = window.donationsData[docId];
   if(!data) return;
@@ -341,7 +356,6 @@ window.openSlipModal = function(docId) {
     modalDate = dateObj.toLocaleDateString("en-IN");
   }
   document.getElementById("mDate").innerText = modalDate;
-
   document.getElementById("slipModal").style.display = "flex";
 };
 
