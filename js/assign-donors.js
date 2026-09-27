@@ -1,3 +1,4 @@
+// Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyAXXMSZOOd1Cb_Tuwp8ZnjT6Iwd0jMrh6U",
   authDomain: "gulaman-e-risalat-team.firebaseapp.com",
@@ -10,79 +11,162 @@ const firebaseConfig = {
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// Load Coordinators (From employees collection)
+// Global Variables
+window.unassignedDonors = [];
+window.assignedDonors = [];
+
+// 1. Load Coordinators (For Assigning and Filtering)
 db.collection("employees").onSnapshot((snapshot) => {
   const coordSelect = document.getElementById("coordSelect");
+  const filterCoord = document.getElementById("filterCoord");
+  
   coordSelect.innerHTML = `<option value="" disabled selected>Select Coordinator</option>`;
+  filterCoord.innerHTML = `<option value="All">All Coordinators</option>`;
+  
   snapshot.forEach((doc) => {
     const data = doc.data();
     coordSelect.innerHTML += `<option value="${data.fullName}">${data.fullName}</option>`;
+    filterCoord.innerHTML += `<option value="${data.fullName}">${data.fullName}</option>`;
   });
 });
 
-// Load Donors (For Dropdown & Table)
+// 2. Load All Donors & Split into 'Unassigned' and 'Assigned'
 db.collection("monthly_donors_list").orderBy("donorName", "asc").onSnapshot((snapshot) => {
-  const donorSelect = document.getElementById("donorSelect");
-  const tableBody = document.getElementById("assignedTableBody");
-  
-  donorSelect.innerHTML = `<option value="" disabled selected>Select Donor</option>`;
-  tableBody.innerHTML = "";
-  
-  let index = 1;
-  let hasData = false;
+  window.unassignedDonors = [];
+  window.assignedDonors = [];
 
   snapshot.forEach((doc) => {
-    hasData = true;
     const data = doc.data();
-    const docId = doc.id;
-    const assignedTo = data.assignedCoordinator || "Unassigned";
-
-    // Add to dropdown (Sirf unhe dikhayein jo unassigned hain, ya sabhi ko overwrite karne ke liye dikhayein)
-    donorSelect.innerHTML += `<option value="${docId}">${data.donorName} (${assignedTo})</option>`;
-
-    // Add to Table
-    const badgeColor = assignedTo === "Unassigned" ? "#dc3545" : "#28a745";
-    const row = `
-      <tr>
-        <td>${index++}</td>
-        <td><strong style="color: #333;">${data.donorName}</strong></td>
-        <td>${data.mobile}</td>
-        <td><span style="background: ${badgeColor}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">${assignedTo}</span></td>
-        <td>
-          <button onclick="unassignDonor('${docId}')" style="background: #ffc107; color: black; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight:bold;">Remove Assignment</button>
-        </td>
-      </tr>
-    `;
-    tableBody.innerHTML += row;
+    data.id = doc.id;
+    
+    // Agar coordinator ka naam nahi hai, toh unassigned manein
+    if (data.assignedCoordinator && data.assignedCoordinator !== "Unassigned") {
+      window.assignedDonors.push(data);
+    } else {
+      window.unassignedDonors.push(data);
+    }
   });
 
-  if(!hasData) tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No donors found.</td></tr>`;
+  renderUnassignedList();
+  renderAssignedTable();
 });
 
-// Assign Donor to Coordinator
-document.getElementById("assignForm").addEventListener("submit", function(e) {
+// 3. Render Checkbox List for Unassigned Donors (with Search Logic)
+function renderUnassignedList() {
+  const searchQuery = document.getElementById("searchUnassigned").value.toLowerCase();
+  const listContainer = document.getElementById("unassignedList");
+  listContainer.innerHTML = "";
+  
+  let hasData = false;
+
+  window.unassignedDonors.forEach(donor => {
+    if (donor.donorName.toLowerCase().includes(searchQuery)) {
+      hasData = true;
+      listContainer.innerHTML += `
+        <div class="checkbox-item">
+          <input type="checkbox" id="chk_${donor.id}" value="${donor.id}" class="donor-checkbox">
+          <label for="chk_${donor.id}">${donor.donorName} <span style="color:#777; font-size:13px;">(${donor.mobile})</span></label>
+        </div>
+      `;
+    }
+  });
+
+  if (!hasData) {
+    listContainer.innerHTML = `<p style="color:#dc3545; font-size:14px; text-align:center; padding:10px;">No unassigned donors match your search.</p>`;
+  }
+}
+
+// 4. Render Table for Assigned Donors (with Filter Logic)
+function renderAssignedTable() {
+  const fCoord = document.getElementById("filterCoord").value;
+  const fName = document.getElementById("filterDonorName").value.toLowerCase();
+  const tableBody = document.getElementById("assignedTableBody");
+  
+  tableBody.innerHTML = "";
+  let index = 1;
+  let hasVisibleRows = false;
+
+  window.assignedDonors.forEach(donor => {
+    const matchCoord = fCoord === "All" || donor.assignedCoordinator === fCoord;
+    const matchName = donor.donorName.toLowerCase().includes(fName);
+
+    if (matchCoord && matchName) {
+      hasVisibleRows = true;
+      const row = `
+        <tr>
+          <td>${index++}</td>
+          <td><strong style="color: #0056b3;">${donor.assignedCoordinator}</strong></td>
+          <td><strong style="color: #333;">${donor.donorName}</strong></td>
+          <td>${donor.mobile}</td>
+          <td>
+            <button onclick="unassignDonor('${donor.id}')" style="background: #ffc107; color: black; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight:bold;">❌ Unassign</button>
+          </td>
+        </tr>
+      `;
+      tableBody.innerHTML += row;
+    }
+  });
+
+  if (!hasVisibleRows) {
+    tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; font-weight:bold; color:#dc3545;">No matching assigned donors found.</td></tr>`;
+  }
+}
+
+// 5. EVENT LISTENERS FOR SEARCH AND FILTERS
+document.getElementById("searchUnassigned").addEventListener("input", renderUnassignedList);
+document.getElementById("filterCoord").addEventListener("change", renderAssignedTable);
+document.getElementById("filterDonorName").addEventListener("input", renderAssignedTable);
+
+// 6. SUBMIT ASSIGNMENT (Multiple Checkbox Saving)
+document.getElementById("assignForm").addEventListener("submit", async function(e) {
   e.preventDefault();
+  
   const coordName = document.getElementById("coordSelect").value;
-  const donorId = document.getElementById("donorSelect").value;
+  const selectedCheckboxes = document.querySelectorAll(".donor-checkbox:checked");
   const msgBox = document.getElementById("statusMsg");
 
-  db.collection("monthly_donors_list").doc(donorId).update({
-    assignedCoordinator: coordName
-  }).then(() => {
-    msgBox.style.color = "#28a745";
-    msgBox.innerText = "✅ Donor assigned successfully!";
-    setTimeout(() => { msgBox.innerText = ""; }, 3000);
-  }).catch((error) => {
-    msgBox.style.color = "#dc3545";
-    msgBox.innerText = "Error: " + error.message;
+  if (selectedCheckboxes.length === 0) {
+    alert("Please select at least one donor from the list!");
+    return;
+  }
+
+  msgBox.style.color = "#0056b3";
+  msgBox.innerText = `Assigning ${selectedCheckboxes.length} donors, please wait...`;
+
+  // Create an array of update promises
+  const updatePromises = [];
+  selectedCheckboxes.forEach(checkbox => {
+    const donorId = checkbox.value;
+    const p = db.collection("monthly_donors_list").doc(donorId).update({
+      assignedCoordinator: coordName
+    });
+    updatePromises.push(p);
   });
+
+  try {
+    // Wait for all updates to finish
+    await Promise.all(updatePromises);
+    msgBox.style.color = "#28a745";
+    msgBox.innerText = `✅ Successfully assigned ${selectedCheckboxes.length} donors to ${coordName}!`;
+    
+    // Form and search box reset
+    document.getElementById("assignForm").reset();
+    document.getElementById("searchUnassigned").value = "";
+    
+    setTimeout(() => { msgBox.innerText = ""; }, 4000);
+  } catch (error) {
+    msgBox.style.color = "#dc3545";
+    msgBox.innerText = "Error assigning donors: " + error.message;
+  }
 });
 
-// Remove Assignment (Unassign)
+// 7. REMOVE ASSIGNMENT
 window.unassignDonor = function(docId) {
-  if(confirm("Remove this coordinator assignment?")) {
+  if(confirm("Are you sure you want to remove this coordinator assignment? The donor will move back to the unassigned list.")) {
     db.collection("monthly_donors_list").doc(docId).update({
-      assignedCoordinator: firebase.firestore.FieldValue.delete()
+      assignedCoordinator: firebase.firestore.FieldValue.delete() // Field ko database se delete kar dega
+    }).catch(error => {
+      alert("Error removing assignment: " + error.message);
     });
   }
 };
