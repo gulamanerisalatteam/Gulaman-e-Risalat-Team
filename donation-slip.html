@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="css/register.css">
   
   <style>
-    /* Top Bar Design */
     .top-bar {
       background: #ffffff;
       padding: 15px 20px;
@@ -23,7 +22,6 @@
     .welcome-text { font-weight: bold; color: #0056b3; font-size: 16px; }
     .logout-btn { background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
     
-    /* Form input style for Date and Select */
     select, input[type="month"] {
       width: 100%;
       padding: 12px 15px;
@@ -33,11 +31,37 @@
       font-size: 15px;
       background: #f8f9fa;
     }
+
+    /* Receipt Design */
+    .receipt-box {
+      background: #fff;
+      padding: 20px;
+      border: 2px dashed #0056b3;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    .receipt-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 15px;
+      border-bottom: 1px solid #f1f1f1;
+      padding-bottom: 5px;
+    }
+    .btn-group {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-green { background: #28a745; }
+    .btn-green:hover { background: #218838; }
   </style>
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  
+  <!-- HTML to Image Converter Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body style="background: #f4f7fa;">
 
@@ -47,8 +71,8 @@
     <button class="logout-btn" onclick="logoutCoordinator()">Logout</button>
   </div>
 
-  <!-- Donation Slip Card -->
-  <div class="card" style="margin-top: 30px; margin-bottom: 30px;">
+  <!-- 1. Form Card (Ye shuru me dikhega) -->
+  <div class="card" id="formCard" style="margin-top: 30px; margin-bottom: 30px;">
     <div class="logo-box">
       <img src="images/logo.png" alt="Logo" class="app-logo" style="width: 80px;">
     </div>
@@ -56,19 +80,15 @@
     <h2 class="team-title">Donation Slip</h2>
     
     <form id="donationForm">
-      <!-- 1. Name -->
       <label>Donator Name:</label>
       <input type="text" id="donorName" placeholder="Enter Full Name" required>
 
-      <!-- 2. Month and Year -->
       <label>Month and Year:</label>
       <input type="month" id="monthYear" required>
 
-      <!-- 3. Amount -->
       <label>Donation Amount (₹):</label>
       <input type="number" id="donationAmount" placeholder="Enter Amount (e.g. 500)" min="1" required>
 
-      <!-- 4. Donor Type (Updated) -->
       <label>Donor Type:</label>
       <select id="donorType" required>
         <option value="" disabled selected>Select Donor Type</option>
@@ -76,10 +96,47 @@
         <option value="Without Box">Without Box</option>
       </select>
 
-      <button type="submit" class="btn btn-blue">Submit</button>
+      <button type="submit" class="btn btn-blue">Submit Data</button>
     </form>
-    
     <div id="donationMsg" class="error-msg" style="margin-top: 15px; text-align: center; font-weight: bold;"></div>
+  </div>
+
+  <!-- 2. Receipt Card (Submit hone ke baad ye dikhega, abhi chhupa hua hai) -->
+  <div class="card" id="receiptCard" style="display: none; margin-top: 30px; margin-bottom: 30px;">
+    
+    <!-- Jis hisse ki image banegi wo yahan hai -->
+    <div id="receiptContent" class="receipt-box">
+      <div style="text-align: center; margin-bottom: 15px;">
+        <img src="images/logo.png" alt="Logo" style="width: 60px;">
+        <h3 style="color: #0056b3; margin: 5px 0;">Gulaman-e-Risalat Team</h3>
+        <p style="margin: 0; font-size: 14px; color: #555;">Donation Receipt</p>
+      </div>
+
+      <div class="receipt-row">
+        <strong>Name:</strong> <span id="rName"></span>
+      </div>
+      <div class="receipt-row">
+        <strong>Month/Year:</strong> <span id="rMonth"></span>
+      </div>
+      <div class="receipt-row">
+        <strong>Amount:</strong> <span style="color: #28a745; font-weight: bold;">₹ <span id="rAmount"></span></span>
+      </div>
+      <div class="receipt-row">
+        <strong>Type:</strong> <span id="rType"></span>
+      </div>
+      <div class="receipt-row">
+        <strong>Date:</strong> <span id="rDate"></span>
+      </div>
+      <div style="text-align: center; margin-top: 15px; font-size: 12px; color: #777;">
+        Jazakallah for your support!
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="btn-group">
+      <button onclick="shareReceipt()" class="btn btn-blue" style="flex: 1; padding: 10px;">📤 Share Image</button>
+      <button onclick="showFormAgain()" class="btn btn-blue btn-green" style="flex: 1; padding: 10px;">➕ New Entry</button>
+    </div>
   </div>
 
   <!-- Javascript File Link -->
