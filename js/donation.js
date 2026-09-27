@@ -31,30 +31,32 @@ function formatMonthYearString(yyyyMm) {
   return `${months[monthIndex]}-${parts[0]}`;
 }
 
-// 4. FETCH DONORS FROM FIREBASE (Only Name)
+// 4. FETCH DONORS FROM FIREBASE (Filtered by Assigned Coordinator)
 const donorNameSelect = document.getElementById("donorName");
 const donorTypeSelect = document.getElementById("donorType");
 
 db.collection("monthly_donors_list").orderBy("donorName", "asc").onSnapshot((snapshot) => {
   donorNameSelect.innerHTML = `<option value="" disabled selected>Select Donor</option>`;
   
-  if (snapshot.empty) {
-    donorNameSelect.innerHTML = `<option value="" disabled selected>No Donors Found</option>`;
-    return;
-  }
+  let matchFound = false;
 
   snapshot.forEach((doc) => {
     const data = doc.data();
-    const option = document.createElement("option");
     
-    option.value = data.donorName; // Database me save hone wala naam
-    option.dataset.type = data.donorType; // Auto-fill ke liye type save kiya
-    
-    // Yahan sirf naam show hoga (Mobile number nahi dikhega)
-    option.innerText = data.donorName; 
-    
-    donorNameSelect.appendChild(option);
+    // Sirf wahi donor dikhega jo logged-in user ko assign hai
+    if (data.assignedCoordinator === loggedInUser.fullName) {
+      matchFound = true;
+      const option = document.createElement("option");
+      option.value = data.donorName; 
+      option.dataset.type = data.donorType; 
+      option.innerText = data.donorName; // Mobile number remove kiya gaya
+      donorNameSelect.appendChild(option);
+    }
   });
+
+  if (!matchFound) {
+    donorNameSelect.innerHTML = `<option value="" disabled selected>No Donors Assigned to You</option>`;
+  }
 }, (error) => {
   donorNameSelect.innerHTML = `<option value="" disabled selected>Error loading donors</option>`;
 });
@@ -89,7 +91,7 @@ document.getElementById("donationForm").addEventListener("submit", function(e) {
     donorType: donorType,
     coordinatorName: loggedInUser.fullName, 
     coordinatorMobile: loggedInUser.mobile, 
-    status: "Pending", // YAHAN NAYI LINE JODI GAYI HAI
+    status: "Pending", // Default status Pending save hoga
     timestamp: firebase.firestore.FieldValue.serverTimestamp()
   }).then(() => {
     msgBox.innerText = "";
