@@ -41,7 +41,6 @@ db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) =>
     const data = doc.data();
     const docId = doc.id;
     
-    // Store data so the View Slip button can access it
     window.donationsData[docId] = data;
 
     const displayMonthYear = formatMonthYearString(data.monthYear);
@@ -55,7 +54,6 @@ db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) =>
       });
     }
 
-    // 7 Columns perfectly mapped to your HTML headers
     const row = `
       <tr>
         <td>${index++}</td>
@@ -85,6 +83,14 @@ window.openSlipModal = function(docId) {
   document.getElementById("mAmount").innerText = data.amount;
   document.getElementById("mType").innerText = data.donorType;
   document.getElementById("mCoord").innerText = data.coordinatorName || "N/A"; 
+
+  // NAYA: Slip modal me Date set karna
+  let modalDate = "N/A";
+  if (data.timestamp) {
+    const dateObj = data.timestamp.toDate();
+    modalDate = dateObj.toLocaleDateString("en-IN"); // Sirf Date (e.g. 27/9/2026)
+  }
+  document.getElementById("mDate").innerText = modalDate;
 
   document.getElementById("slipModal").style.display = "flex";
 };
