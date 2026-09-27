@@ -31,7 +31,7 @@ function formatMonthYearString(yyyyMm) {
   return `${months[monthIndex]}-${parts[0]}`;
 }
 
-// 4. FETCH DONORS FROM FIREBASE (New Feature)
+// 4. FETCH DONORS FROM FIREBASE (New Feature - Only Name)
 const donorNameSelect = document.getElementById("donorName");
 const donorTypeSelect = document.getElementById("donorType");
 
@@ -50,8 +50,8 @@ db.collection("monthly_donors_list").orderBy("donorName", "asc").onSnapshot((sna
     option.value = data.donorName; // Database me save hone wala naam
     option.dataset.type = data.donorType; // Auto-fill ke liye type save kiya
     
-    // Naam ke aage mobile number dikhayenge taaki ek jaise naam walo me confusion na ho
-    option.innerText = `${data.donorName} (${data.mobile})`; 
+    // Yahan sirf naam show hoga (Mobile number hata diya gaya hai)
+    option.innerText = data.donorName; 
     
     donorNameSelect.appendChild(option);
   });
