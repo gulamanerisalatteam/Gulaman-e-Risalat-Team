@@ -18,7 +18,9 @@ const sidebarHTML = `
     
     <a href="dashboard.html" id="nav-dashboard">Dashboard</a>
     <a href="coordinator-details.html" id="nav-coordinator">Coordinator Details</a>
-    <a href="monthly-donors.html" id="nav-donors">Monthly Donors</a> <!-- Naya Link -->
+    
+    <!-- Yahan Name aur Link dono update kar diye gaye hain -->
+    <a href="monthly-donors-collection.html" id="nav-donors">Monthly Donors Collection</a> 
     
     <button class="logout-btn" onclick="localStorage.removeItem('adminUser'); window.location.href='index.html';">Logout</button>
   </div>
@@ -31,7 +33,7 @@ document.getElementById("sidebar-container").innerHTML = sidebarHTML;
 const currentPage = window.location.pathname;
 if (currentPage.includes("coordinator-details.html")) {
   document.getElementById("nav-coordinator").classList.add("active");
-} else if (currentPage.includes("monthly-donors.html")) {
+} else if (currentPage.includes("monthly-donors-collection.html")) { // Yahan bhi link update kiya hai
   document.getElementById("nav-donors").classList.add("active");
 } else {
   document.getElementById("nav-dashboard").classList.add("active");
