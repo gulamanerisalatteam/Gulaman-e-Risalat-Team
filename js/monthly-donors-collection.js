@@ -1,15 +1,18 @@
-// 1. Check User Role (Admin or Coordinator)
+// 1. Check User Role & Safely Get Coordinator Name
 let userRole = "";
-let loggedInUser = null;
+let loggedInCoordName = "";
 
 if (localStorage.getItem("adminUser")) {
   userRole = "admin";
 } else if (localStorage.getItem("loggedInCoordinator")) {
   userRole = "coordinator";
+  let rawData = localStorage.getItem("loggedInCoordinator");
+  // Error-proof logic to get coordinator name
   try {
-    loggedInUser = JSON.parse(localStorage.getItem("loggedInCoordinator"));
+    let parsed = JSON.parse(rawData);
+    loggedInCoordName = parsed.fullName || parsed.name || String(parsed);
   } catch(e) {
-    loggedInUser = null;
+    loggedInCoordName = rawData; // Agar JSON nahi, direct string hai toh ye chalega
   }
 } else {
   window.location.href = "index.html";
@@ -100,7 +103,7 @@ function populateDropdowns() {
     if (nameSet.has(currentName)) filterName.value = currentName;
   }
   
-  if (filterCoord) {
+  if (filterCoord && userRole === "admin") {
     const currentCoord = filterCoord.value;
     filterCoord.innerHTML = `<option value="All">All Coordinators</option>`;
     Array.from(coordSet).sort().forEach(coord => { filterCoord.innerHTML += `<option value="${coord}">${coord}</option>`; });
@@ -125,9 +128,15 @@ db.collection("donations").onSnapshot((snapshot) => {
     const data = doc.data();
     data.id = doc.id; 
     
-    // Coordinator Role Check
-    if (userRole === "coordinator" && loggedInUser && data.coordinatorName !== loggedInUser.fullName) {
-      return; 
+    // 🔥 PERFECT COORDINATOR FILTER LOGIC
+    if (userRole === "coordinator") {
+      let recordCoord = String(data.coordinatorName || "").trim().toLowerCase();
+      let myCoord = String(loggedInCoordName || "").trim().toLowerCase();
+      
+      // Agar raseed kisi aur coordinator ne kaati hai, toh ignore kardo
+      if (recordCoord !== myCoord) {
+        return; 
+      }
     }
     
     window.donationsData[doc.id] = data;
@@ -142,7 +151,7 @@ db.collection("donations").onSnapshot((snapshot) => {
   });
 
   if (window.allDonationsList.length === 0) {
-    if (tableBody) tableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding: 15px;">No donations recorded yet.</td></tr>`;
+    if (tableBody) tableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding: 15px;">No donations recorded for you yet.</td></tr>`;
     document.getElementById("boxSummaryBody").innerHTML = `<tr><td style="text-align:center; padding: 15px;">No data found</td></tr>`;
     document.getElementById("withoutBoxSummaryBody").innerHTML = `<tr><td style="text-align:center; padding: 15px;">No data found</td></tr>`;
     return;
@@ -273,8 +282,8 @@ function renderSummaries() {
     return bodyHTML;
   }
 
-  document.getElementById("boxSummaryBody").innerHTML = buildTableRows(boxData, displayMonths, "No Box Donations found in this range");
-  document.getElementById("withoutBoxSummaryBody").innerHTML = buildTableRows(withoutBoxData, displayMonths, "No Without Box Donations found in this range");
+  document.getElementById("boxSummaryBody").innerHTML = buildTableRows(boxData, displayMonths, "No Box Donations found");
+  document.getElementById("withoutBoxSummaryBody").innerHTML = buildTableRows(withoutBoxData, displayMonths, "No Without Box Donations found");
 }
 
 function renderTable() {
@@ -356,7 +365,7 @@ function renderTable() {
 
 window.clearFilters = function() {
   if (document.getElementById("filterName")) document.getElementById("filterName").value = "All";
-  if (document.getElementById("filterCoord")) document.getElementById("filterCoord").value = "All"; 
+  if (document.getElementById("filterCoord") && userRole === "admin") document.getElementById("filterCoord").value = "All"; 
   if (document.getElementById("filterMonth")) document.getElementById("filterMonth").value = "";
   if (document.getElementById("filterType")) document.getElementById("filterType").value = "All";
   if (document.getElementById("filterStatus")) document.getElementById("filterStatus").value = "All";
