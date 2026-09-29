@@ -7,8 +7,6 @@
   
   <style>
     body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; }
-    .header { background: #0056b3; color: white; padding: 15px 20px; text-align: center; font-size: 20px; font-weight: bold; position: relative; }
-    .back-btn { position: absolute; left: 15px; top: 15px; color: white; text-decoration: none; font-size: 14px; background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 5px; }
     
     .container { padding: 20px; max-width: 500px; margin: auto; }
     .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
@@ -23,6 +21,7 @@
     #receiptCard { display: none; }
     .receipt-box { border: 2px dashed #0056b3; padding: 20px; border-radius: 10px; background: #fff; margin-bottom: 15px; }
     .receipt-row { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 8px 0; font-size: 14px; }
+    
     .btn-share { background: #007bff; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
     .btn-new { background: #6c757d; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
   </style>
@@ -34,10 +33,8 @@
 </head>
 <body>
 
-  <div class="header">
-    <a href="donation-slip.html" class="back-btn">⬅ Back</a>
-    ➕ New Donors Form
-  </div>
+  <!-- MOBILE SIDEBAR CONTAINER -->
+  <div id="coord-sidebar-container"></div>
 
   <div class="container">
     <!-- FORM SECTION -->
@@ -80,6 +77,7 @@
     </div>
   </div>
 
+  <script src="js/coord-sidebar.js"></script>
   <script src="js/new-donor.js"></script>
 </body>
 </html>
