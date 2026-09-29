@@ -43,7 +43,7 @@ const tableBody = document.getElementById("donorsTableBody");
 
 window.donationsData = {}; 
 window.allDonationsList = []; 
-let myAssignedDonors = new Set(); // Yahan assigned donors ke naam store honge
+let myAssignedDonors = new Set();
 let donorsLoaded = false;
 let donationsLoaded = false;
 let rawDonations = [];
@@ -78,13 +78,12 @@ function generateMonthRange(start, end) {
   return months;
 }
 
-// 🔥 STEP A: SEEDHA "assign-donors" WALE LOGIC SE ASSIGNED DONORS NIKALO
+// Fetch Assigned Donors
 if (userRole === "coordinator") {
   db.collection("monthly_donors_list").onSnapshot((snap) => {
     myAssignedDonors.clear();
     snap.forEach(doc => {
       let data = doc.data();
-      // EXACT MATCH: Jo naam assign kiya gaya hai, wahi check hoga
       if (data.assignedCoordinator === loggedInCoordName) {
         myAssignedDonors.add(data.donorName);
       }
@@ -96,7 +95,7 @@ if (userRole === "coordinator") {
   donorsLoaded = true; 
 }
 
-// 🔥 STEP B: FETCH ALL DONATION SLIPS
+// Fetch All Donations
 db.collection("donations").onSnapshot((snapshot) => {
   rawDonations = [];
   snapshot.forEach((doc) => {
@@ -117,25 +116,23 @@ db.collection("donations").onSnapshot((snapshot) => {
   if (tableBody) tableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; color:#dc3545;">Error: ${error.message}</td></tr>`;
 });
 
-// 🔥 STEP C: FILTER DONATIONS BASED ON ASSIGNMENT
+// Process and Filter Data
 function processDonations() {
   window.donationsData = {};
   window.allDonationsList = [];
 
   rawDonations.forEach(data => {
     if (userRole === "coordinator") {
-      // Agar ye donor is coordinator ko ASSIGN NAHI HAI, toh data hide kardo!
       if (!myAssignedDonors.has(data.donorName)) {
         return; 
       }
     }
-
     window.donationsData[data.id] = data;
     window.allDonationsList.push(data);
   });
 
   if (window.allDonationsList.length === 0) {
-    if (tableBody) tableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding: 15px;">No donations found for your assigned donors.</td></tr>`;
+    if (tableBody) tableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding: 15px;">No donations found.</td></tr>`;
     document.getElementById("boxSummaryBody").innerHTML = `<tr><td style="text-align:center; padding: 15px;">No data</td></tr>`;
     document.getElementById("withoutBoxSummaryBody").innerHTML = `<tr><td style="text-align:center; padding: 15px;">No data</td></tr>`;
     return;
@@ -145,8 +142,6 @@ function processDonations() {
   populateDropdowns();
   renderTable();
 }
-
-// --- BAKI SAB PURANA LOGIC SAME RAHEGA ---
 
 function populateDropdowns() {
   const nameSet = new Set();
@@ -194,6 +189,8 @@ window.clearSummaryFilters = function() {
   renderSummaries();
 };
 
+
+// 🔥 UPDATED SUMMARY LOGIC (Handles Multiple Entries Per Month)
 function renderSummaries() {
   const fromMonth = fromMonthInput ? fromMonthInput.value : "";
   const toMonth = toMonthInput ? toMonthInput.value : "";
@@ -205,49 +202,98 @@ function renderSummaries() {
   else if (toMonth) { let minM = dataMonths.length > 0 ? dataMonths[0] : toMonth; if (minM > toMonth) minM = toMonth; displayMonths = generateMonthRange(minM, toMonth); } 
   else { displayMonths = dataMonths; }
 
-  let boxData = {}; let withoutBoxData = {};
+  let boxData = {}; 
+  let withoutBoxData = {};
 
   window.allDonationsList.forEach(d => {
     if (d.status === "Rejected") return; 
     let mYear = d.monthYear || "Unknown";
     if (fromMonth && toMonth && !displayMonths.includes(mYear)) return;
+    
     let target = (d.donorType === "Box") ? boxData : withoutBoxData;
     if (!d.donorName) return;
+    
     if (!target[d.donorName]) target[d.donorName] = {};
-    if (!target[d.donorName][mYear]) target[d.donorName][mYear] = { amount: 0, status: d.status || "Pending" };
-    target[d.donorName][mYear].amount += Number(d.amount || 0); 
-    target[d.donorName][mYear].status = d.status || "Pending"; 
+    if (!target[d.donorName][mYear]) {
+      // New Structure: Store accepted sum and check if ANY entry is pending
+      target[d.donorName][mYear] = { 
+        acceptedAmount: 0, 
+        hasPending: false 
+      };
+    }
+    
+    let currentStatus = d.status || "Pending";
+    let amountVal = Number(d.amount || 0);
+
+    if (currentStatus === "Accepted") {
+      target[d.donorName][mYear].acceptedAmount += amountVal;
+    } else if (currentStatus === "Pending") {
+      target[d.donorName][mYear].hasPending = true;
+    }
   });
 
+  // Generate Headers
   let headerHTML = `<tr><th style="text-align:center;">S.No.</th><th style="text-align:left;">Donor Name</th>`;
   if (displayMonths.length === 0) headerHTML += `<th>No Months Selected/Found</th></tr>`;
-  else { displayMonths.forEach(m => { headerHTML += `<th style="text-align:center;">${formatShortMonthYear(m)}</th>`; }); headerHTML += `<th style="text-align:center; color: #d32f2f; font-weight: bold;">Total</th></tr>`; }
+  else { 
+    displayMonths.forEach(m => { headerHTML += `<th style="text-align:center;">${formatShortMonthYear(m)}</th>`; }); 
+    headerHTML += `<th style="text-align:center; color: #d32f2f; font-weight: bold;">Total</th></tr>`; 
+  }
+  
   document.getElementById("boxSummaryHead").innerHTML = headerHTML;
   document.getElementById("withoutBoxSummaryHead").innerHTML = headerHTML;
 
+  // Build Rows Data
   function buildTableRows(dataObj, monthArray, emptyMsg) {
     let bodyHTML = ""; let sIndex = 1;
     const names = Object.keys(dataObj).sort();
+    
     if (names.length > 0) {
       names.forEach(donorName => {
         let monthsObj = dataObj[donorName];
-        let rowTotal = 0;
+        let rowTotal = 0; // Only Accepted amount sum
+        
         bodyHTML += `<tr><td style="text-align:center;">${sIndex++}</td><td style="text-align:left;"><strong style="color:#0056b3;">${donorName}</strong></td>`;
+        
         monthArray.forEach(m => {
           if (monthsObj && monthsObj[m]) {
-            if (monthsObj[m].status === "Accepted") { bodyHTML += `<td style="text-align:center;"><span style="color:#28a745; font-weight:bold;">₹${monthsObj[m].amount}</span></td>`; rowTotal += monthsObj[m].amount; } 
-            else { bodyHTML += `<td style="text-align:center;"><span style="color:#ff9800; font-weight:bold; font-size:12px;">Pending</span></td>`; }
-          } else { bodyHTML += `<td style="text-align:center; color:#ccc;">-</td>`; }
+            let dataCell = monthsObj[m];
+            
+            // Logic for Displaying cell data
+            if (dataCell.acceptedAmount > 0 && dataCell.hasPending) {
+              // 230 / Pending
+              bodyHTML += `<td style="text-align:center;"><span style="color:#28a745; font-weight:bold;">₹${dataCell.acceptedAmount}</span> <br> <span style="color:#ff9800; font-size:11px; font-weight:bold;">Pending</span></td>`;
+              rowTotal += dataCell.acceptedAmount;
+            } else if (dataCell.acceptedAmount > 0) {
+              // Only Accepted
+              bodyHTML += `<td style="text-align:center;"><span style="color:#28a745; font-weight:bold;">₹${dataCell.acceptedAmount}</span></td>`;
+              rowTotal += dataCell.acceptedAmount;
+            } else if (dataCell.hasPending) {
+              // Only Pending (0 accepted)
+              bodyHTML += `<td style="text-align:center;"><span style="color:#ff9800; font-weight:bold; font-size:12px;">Pending</span></td>`;
+            } else {
+              bodyHTML += `<td style="text-align:center; color:#ccc;">-</td>`;
+            }
+
+          } else { 
+            bodyHTML += `<td style="text-align:center; color:#ccc;">-</td>`; 
+          }
         });
+        
+        // Render Row Total
         bodyHTML += `<td style="text-align:center; background:#fff3f3; border-left:2px solid #ffcdd2;"><strong style="color:#d32f2f;">₹${rowTotal}</strong></td></tr>`;
       });
-    } else { bodyHTML = `<tr><td colspan="${monthArray.length + 3}" style="text-align:center; padding:15px;">${emptyMsg}</td></tr>`; }
+    } else { 
+      bodyHTML = `<tr><td colspan="${monthArray.length + 3}" style="text-align:center; padding:15px;">${emptyMsg}</td></tr>`; 
+    }
     return bodyHTML;
   }
+  
   document.getElementById("boxSummaryBody").innerHTML = buildTableRows(boxData, displayMonths, "No Box Donations found");
   document.getElementById("withoutBoxSummaryBody").innerHTML = buildTableRows(withoutBoxData, displayMonths, "No Without Box Donations found");
 }
 
+// Rest of the Main Table Code
 function renderTable() {
   if (!tableBody) return;
   const filterName = document.getElementById("filterName") ? document.getElementById("filterName").value : "All";
