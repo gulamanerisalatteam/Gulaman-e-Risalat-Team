@@ -58,9 +58,9 @@ function formatShortMonthYear(yyyyMm) {
   return `${months[mIndex] || parts[1]}-${parts[0].slice(-2)}`;
 }
 
-// 100% Safe Month Generator: Infinite loop se bachane ke liye pure integer step
+// Safe Month Generator
 function generateMonthRange(start, end) {
-  if (!start || !end) return [];
+  if (!start || !end || !start.includes("-") || !end.includes("-")) return [];
   if (start > end) {
     let tmp = start; start = end; end = tmp;
   }
@@ -134,7 +134,7 @@ db.collection("donations").onSnapshot((snapshot) => {
     window.allDonationsList.push(data);
   });
 
-  // Sort locally by timestamp or date safely
+  // Sort locally by timestamp
   window.allDonationsList.sort((a, b) => {
     let tA = a.timestamp && a.timestamp.toMillis ? a.timestamp.toMillis() : 0;
     let tB = b.timestamp && b.timestamp.toMillis ? b.timestamp.toMillis() : 0;
@@ -148,14 +148,16 @@ db.collection("donations").onSnapshot((snapshot) => {
     return;
   }
 
-  renderSummaries(); 
-  populateDropdowns(); 
-  renderTable(); 
+  try {
+    renderSummaries(); 
+    populateDropdowns(); 
+    renderTable(); 
+  } catch (err) {
+    console.error("Rendering error: ", err);
+  }
 }, (error) => {
   console.error("Firestore Error:", error);
   if (tableBody) tableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; color: #dc3545; padding: 15px;">Failed to load data: ${error.message}</td></tr>`;
-  document.getElementById("boxSummaryBody").innerHTML = `<tr><td style="text-align:center; color:#dc3545; padding: 15px;">Error loading summary</td></tr>`;
-  document.getElementById("withoutBoxSummaryBody").innerHTML = `<tr><td style="text-align:center; color:#dc3545; padding: 15px;">Error loading summary</td></tr>`;
 });
 
 // Event Listeners for Summary Dates
@@ -210,18 +212,20 @@ function renderSummaries() {
 
   window.allDonationsList.forEach(d => {
     if (d.status === "Rejected") return; 
-    if (fromMonth && toMonth && !displayMonths.includes(d.monthYear)) return;
+    let mYear = d.monthYear || "Unknown";
+    
+    if (fromMonth && toMonth && !displayMonths.includes(mYear)) return;
 
     let target = (d.donorType === "Box") ? boxData : withoutBoxData;
     if (!d.donorName) return;
 
     if (!target[d.donorName]) target[d.donorName] = {};
-    if (!target[d.donorName][d.monthYear]) {
-      target[d.donorName][d.monthYear] = { amount: 0, status: d.status || "Pending" };
+    if (!target[d.donorName][mYear]) {
+      target[d.donorName][mYear] = { amount: 0, status: d.status || "Pending" };
     }
     
-    target[d.donorName][d.monthYear].amount += Number(d.amount || 0); 
-    target[d.donorName][d.monthYear].status = d.status || "Pending"; 
+    target[d.donorName][mYear].amount += Number(d.amount || 0); 
+    target[d.donorName][mYear].status = d.status || "Pending"; 
   });
 
   // Table Headers
@@ -345,7 +349,6 @@ function renderTable() {
   }
 }
 
-// Filters attach
 ["filterName", "filterCoord", "filterMonth", "filterType", "filterStatus"].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener("change", renderTable);
