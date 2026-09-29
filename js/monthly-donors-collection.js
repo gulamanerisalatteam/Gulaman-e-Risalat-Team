@@ -6,17 +6,23 @@ if (localStorage.getItem("adminUser")) {
   userRole = "admin";
 } else if (localStorage.getItem("loggedInCoordinator")) {
   userRole = "coordinator";
-  loggedInUser = JSON.parse(localStorage.getItem("loggedInCoordinator"));
+  try {
+    loggedInUser = JSON.parse(localStorage.getItem("loggedInCoordinator"));
+  } catch(e) {
+    loggedInUser = null;
+  }
 } else {
   window.location.href = "index.html";
 }
 
 // 2. Hide Buttons for Coordinator
 if (userRole === "coordinator") {
-  document.getElementById("th-update").style.display = "none";
-  document.getElementById("th-action").style.display = "none";
+  const thUpdate = document.getElementById("th-update");
+  const thAction = document.getElementById("th-action");
   const coordFilter = document.getElementById("filterCoordContainer");
-  if(coordFilter) coordFilter.style.display = "none"; 
+  if (thUpdate) thUpdate.style.display = "none";
+  if (thAction) thAction.style.display = "none";
+  if (coordFilter) coordFilter.style.display = "none";
 }
 
 // 3. Firebase configuration
@@ -37,29 +43,42 @@ window.donationsData = {};
 window.allDonationsList = []; 
 
 function formatMonthYearString(yyyyMm) {
-  if (!yyyyMm || !yyyyMm.includes("-")) return yyyyMm;
+  if (!yyyyMm || typeof yyyyMm !== "string" || !yyyyMm.includes("-")) return yyyyMm || "";
   const parts = yyyyMm.split("-");
   const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  return `${months[parseInt(parts[1], 10) - 1]}-${parts[0]}`;
-}
-function formatShortMonthYear(yyyyMm) {
-  if (!yyyyMm || !yyyyMm.includes("-")) return yyyyMm;
-  const parts = yyyyMm.split("-");
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  return `${months[parseInt(parts[1], 10) - 1]}-${parts[0].slice(-2)}`;
+  const mIndex = parseInt(parts[1], 10) - 1;
+  return `${months[mIndex] || parts[1]}-${parts[0]}`;
 }
 
-// FIXED LOGIC: Safe Month Generator
+function formatShortMonthYear(yyyyMm) {
+  if (!yyyyMm || typeof yyyyMm !== "string" || !yyyyMm.includes("-")) return yyyyMm || "";
+  const parts = yyyyMm.split("-");
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const mIndex = parseInt(parts[1], 10) - 1;
+  return `${months[mIndex] || parts[1]}-${parts[0].slice(-2)}`;
+}
+
+// 100% Safe Month Generator: Infinite loop se bachane ke liye pure integer step
 function generateMonthRange(start, end) {
   if (!start || !end) return [];
+  if (start > end) {
+    let tmp = start; start = end; end = tmp;
+  }
+  let [sY, sM] = start.split('-').map(Number);
+  let [eY, eM] = end.split('-').map(Number);
+  
   let months = [];
-  let [startYear, startMonth] = start.split('-').map(Number);
-  let [endYear, endMonth] = end.split('-').map(Number);
-  let curr = new Date(startYear, startMonth - 1, 1);
-  let endDate = new Date(endYear, endMonth - 1, 1);
-  while (curr <= endDate) {
-    months.push(`${curr.getFullYear()}-${(curr.getMonth() + 1).toString().padStart(2, '0')}`);
-    curr.setMonth(curr.getMonth() + 1);
+  let curY = sY;
+  let curM = sM;
+
+  while (curY < eY || (curY === eY && curM <= eM)) {
+    let mStr = curM < 10 ? '0' + curM : '' + curM;
+    months.push(`${curY}-${mStr}`);
+    curM++;
+    if (curM > 12) {
+      curM = 1;
+      curY++;
+    }
   }
   return months;
 }
@@ -73,26 +92,32 @@ function populateDropdowns() {
   });
   const filterName = document.getElementById("filterName");
   const filterCoord = document.getElementById("filterCoord");
-  const currentName = filterName.value;
-  const currentCoord = filterCoord.value;
-  filterName.innerHTML = `<option value="All">All Donors</option>`;
-  filterCoord.innerHTML = `<option value="All">All Coordinators</option>`;
-  Array.from(nameSet).sort().forEach(name => { filterName.innerHTML += `<option value="${name}">${name}</option>`; });
-  Array.from(coordSet).sort().forEach(coord => { filterCoord.innerHTML += `<option value="${coord}">${coord}</option>`; });
-  if (nameSet.has(currentName)) filterName.value = currentName;
-  if (coordSet.has(currentCoord)) filterCoord.value = currentCoord;
+  
+  if (filterName) {
+    const currentName = filterName.value;
+    filterName.innerHTML = `<option value="All">All Donors</option>`;
+    Array.from(nameSet).sort().forEach(name => { filterName.innerHTML += `<option value="${name}">${name}</option>`; });
+    if (nameSet.has(currentName)) filterName.value = currentName;
+  }
+  
+  if (filterCoord) {
+    const currentCoord = filterCoord.value;
+    filterCoord.innerHTML = `<option value="All">All Coordinators</option>`;
+    Array.from(coordSet).sort().forEach(coord => { filterCoord.innerHTML += `<option value="${coord}">${coord}</option>`; });
+    if (coordSet.has(currentCoord)) filterCoord.value = currentCoord;
+  }
 }
 
 function loadSavedSummaryDates() {
   const savedFrom = localStorage.getItem("summaryFromMonth");
   const savedTo = localStorage.getItem("summaryToMonth");
-  if (savedFrom) document.getElementById("summaryFromMonth").value = savedFrom;
-  if (savedTo) document.getElementById("summaryToMonth").value = savedTo;
+  if (savedFrom && document.getElementById("summaryFromMonth")) document.getElementById("summaryFromMonth").value = savedFrom;
+  if (savedTo && document.getElementById("summaryToMonth")) document.getElementById("summaryToMonth").value = savedTo;
 }
 loadSavedSummaryDates();
 
-// Fetch live Donations Data
-db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+// Real-time Firestore Fetch
+db.collection("donations").onSnapshot((snapshot) => {
   window.donationsData = {}; 
   window.allDonationsList = [];
   
@@ -100,8 +125,8 @@ db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) =>
     const data = doc.data();
     data.id = doc.id; 
     
-    // ROLE CHECK
-    if (userRole === "coordinator" && data.coordinatorName !== loggedInUser.fullName) {
+    // Coordinator Role Check
+    if (userRole === "coordinator" && loggedInUser && data.coordinatorName !== loggedInUser.fullName) {
       return; 
     }
     
@@ -109,8 +134,15 @@ db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) =>
     window.allDonationsList.push(data);
   });
 
+  // Sort locally by timestamp or date safely
+  window.allDonationsList.sort((a, b) => {
+    let tA = a.timestamp && a.timestamp.toMillis ? a.timestamp.toMillis() : 0;
+    let tB = b.timestamp && b.timestamp.toMillis ? b.timestamp.toMillis() : 0;
+    return tB - tA;
+  });
+
   if (window.allDonationsList.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding: 15px;">No donations recorded yet.</td></tr>`;
+    if (tableBody) tableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding: 15px;">No donations recorded yet.</td></tr>`;
     document.getElementById("boxSummaryBody").innerHTML = `<tr><td style="text-align:center; padding: 15px;">No data found</td></tr>`;
     document.getElementById("withoutBoxSummaryBody").innerHTML = `<tr><td style="text-align:center; padding: 15px;">No data found</td></tr>`;
     return;
@@ -120,98 +152,138 @@ db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) =>
   populateDropdowns(); 
   renderTable(); 
 }, (error) => {
-  tableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; color: #dc3545; padding: 15px;">Failed to load data: ${error.message}</td></tr>`;
+  console.error("Firestore Error:", error);
+  if (tableBody) tableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; color: #dc3545; padding: 15px;">Failed to load data: ${error.message}</td></tr>`;
+  document.getElementById("boxSummaryBody").innerHTML = `<tr><td style="text-align:center; color:#dc3545; padding: 15px;">Error loading summary</td></tr>`;
+  document.getElementById("withoutBoxSummaryBody").innerHTML = `<tr><td style="text-align:center; color:#dc3545; padding: 15px;">Error loading summary</td></tr>`;
 });
 
-// DATE RANGE FILTER LOGIC
-document.getElementById("summaryFromMonth").addEventListener("change", function() { localStorage.setItem("summaryFromMonth", this.value); renderSummaries(); });
-document.getElementById("summaryToMonth").addEventListener("change", function() { localStorage.setItem("summaryToMonth", this.value); renderSummaries(); });
+// Event Listeners for Summary Dates
+const fromMonthInput = document.getElementById("summaryFromMonth");
+const toMonthInput = document.getElementById("summaryToMonth");
+
+if (fromMonthInput) {
+  fromMonthInput.addEventListener("change", function() {
+    localStorage.setItem("summaryFromMonth", this.value);
+    renderSummaries();
+  });
+}
+
+if (toMonthInput) {
+  toMonthInput.addEventListener("change", function() {
+    localStorage.setItem("summaryToMonth", this.value);
+    renderSummaries();
+  });
+}
 
 window.clearSummaryFilters = function() {
-  document.getElementById("summaryFromMonth").value = "";
-  document.getElementById("summaryToMonth").value = "";
+  if (fromMonthInput) fromMonthInput.value = "";
+  if (toMonthInput) toMonthInput.value = "";
   localStorage.removeItem("summaryFromMonth");
   localStorage.removeItem("summaryToMonth");
   renderSummaries();
 };
 
 function renderSummaries() {
-  const fromMonth = document.getElementById("summaryFromMonth").value;
-  const toMonth = document.getElementById("summaryToMonth").value;
+  const fromMonth = fromMonthInput ? fromMonthInput.value : "";
+  const toMonth = toMonthInput ? toMonthInput.value : "";
 
   let displayMonths = [];
   let dataMonths = [...new Set(window.allDonationsList.map(d => d.monthYear))].filter(Boolean).sort();
 
-  let startM = fromMonth;
-  let endM = toMonth;
-
-  // Set defaults if inputs are empty
-  if (!startM && dataMonths.length > 0) startM = dataMonths[0];
-  if (!endM && dataMonths.length > 0) endM = dataMonths[dataMonths.length - 1];
-
-  if (startM && endM) {
-    if (startM > endM) { // Swap if user selected 'To' date before 'From' date
-      let temp = startM; startM = endM; endM = temp;
-    }
-    displayMonths = generateMonthRange(startM, endM);
+  if (fromMonth && toMonth) {
+    displayMonths = generateMonthRange(fromMonth, toMonth);
+  } else if (fromMonth) {
+    let maxM = dataMonths.length > 0 ? dataMonths[dataMonths.length - 1] : fromMonth;
+    if (maxM < fromMonth) maxM = fromMonth;
+    displayMonths = generateMonthRange(fromMonth, maxM);
+  } else if (toMonth) {
+    let minM = dataMonths.length > 0 ? dataMonths[0] : toMonth;
+    if (minM > toMonth) minM = toMonth;
+    displayMonths = generateMonthRange(minM, toMonth);
   } else {
     displayMonths = dataMonths;
   }
 
-  let boxData = {}, withoutBoxData = {};
+  let boxData = {};
+  let withoutBoxData = {};
+
   window.allDonationsList.forEach(d => {
     if (d.status === "Rejected") return; 
     if (fromMonth && toMonth && !displayMonths.includes(d.monthYear)) return;
 
     let target = (d.donorType === "Box") ? boxData : withoutBoxData;
+    if (!d.donorName) return;
+
     if (!target[d.donorName]) target[d.donorName] = {};
-    if (!target[d.donorName][d.monthYear]) target[d.donorName][d.monthYear] = { amount: 0, status: d.status || "Pending" };
+    if (!target[d.donorName][d.monthYear]) {
+      target[d.donorName][d.monthYear] = { amount: 0, status: d.status || "Pending" };
+    }
     
-    target[d.donorName][d.monthYear].amount += Number(d.amount); 
+    target[d.donorName][d.monthYear].amount += Number(d.amount || 0); 
     target[d.donorName][d.monthYear].status = d.status || "Pending"; 
   });
 
+  // Table Headers
   let headerHTML = `<tr><th style="text-align:center;">S.No.</th><th style="text-align:left;">Donor Name</th>`;
-  if (displayMonths.length === 0) headerHTML += `<th>No Months Found</th></tr>`;
-  else {
-    displayMonths.forEach(m => { headerHTML += `<th style="text-align:center;">${formatShortMonthYear(m)}</th>`; });
-    headerHTML += `<th style="text-align:center; color: #d32f2f; font-weight: bold; font-size: 15px;">Total</th></tr>`;
+  if (displayMonths.length === 0) {
+    headerHTML += `<th>No Months Selected/Found</th></tr>`;
+  } else {
+    displayMonths.forEach(m => {
+      headerHTML += `<th style="text-align:center;">${formatShortMonthYear(m)}</th>`;
+    });
+    headerHTML += `<th style="text-align:center; color: #d32f2f; font-weight: bold;">Total</th></tr>`;
   }
+
   document.getElementById("boxSummaryHead").innerHTML = headerHTML;
   document.getElementById("withoutBoxSummaryHead").innerHTML = headerHTML;
 
   function buildTableRows(dataObj, monthArray, emptyMsg) {
-    let bodyHTML = "", sIndex = 1;
-    if (Object.keys(dataObj).length > 0) {
-      for (const [donorName, monthsObj] of Object.entries(dataObj).sort()) {
+    let bodyHTML = "";
+    let sIndex = 1;
+    const names = Object.keys(dataObj).sort();
+
+    if (names.length > 0) {
+      names.forEach(donorName => {
+        let monthsObj = dataObj[donorName];
         let rowTotal = 0;
         bodyHTML += `<tr><td style="text-align:center;">${sIndex++}</td><td style="text-align:left;"><strong style="color:#0056b3;">${donorName}</strong></td>`;
+        
         monthArray.forEach(m => {
-          if (monthsObj[m]) {
+          if (monthsObj && monthsObj[m]) {
             if (monthsObj[m].status === "Accepted") {
               bodyHTML += `<td style="text-align:center;"><span style="color:#28a745; font-weight:bold;">₹${monthsObj[m].amount}</span></td>`;
               rowTotal += monthsObj[m].amount; 
-            } else bodyHTML += `<td style="text-align:center;"><span style="color:#ff9800; font-weight:bold; font-size:13px;">Pending</span></td>`;
-          } else bodyHTML += `<td style="text-align:center; color:#ccc;">-</td>`;
+            } else {
+              bodyHTML += `<td style="text-align:center;"><span style="color:#ff9800; font-weight:bold; font-size:12px;">Pending</span></td>`;
+            }
+          } else {
+            bodyHTML += `<td style="text-align:center; color:#ccc;">-</td>`;
+          }
         });
-        bodyHTML += `<td style="text-align:center; background:#fff3f3; border-left:2px solid #ffcdd2;"><strong style="color:#d32f2f; font-size:14px;">₹${rowTotal}</strong></td></tr>`;
-      }
-    } else bodyHTML = `<tr><td colspan="${monthArray.length + 3}" style="text-align:center;">${emptyMsg}</td></tr>`;
+        bodyHTML += `<td style="text-align:center; background:#fff3f3; border-left:2px solid #ffcdd2;"><strong style="color:#d32f2f;">₹${rowTotal}</strong></td></tr>`;
+      });
+    } else {
+      bodyHTML = `<tr><td colspan="${monthArray.length + 3}" style="text-align:center; padding:15px;">${emptyMsg}</td></tr>`;
+    }
     return bodyHTML;
   }
+
   document.getElementById("boxSummaryBody").innerHTML = buildTableRows(boxData, displayMonths, "No Box Donations found in this range");
   document.getElementById("withoutBoxSummaryBody").innerHTML = buildTableRows(withoutBoxData, displayMonths, "No Without Box Donations found in this range");
 }
 
 function renderTable() {
-  const filterName = document.getElementById("filterName").value;
+  if (!tableBody) return;
+  const filterName = document.getElementById("filterName") ? document.getElementById("filterName").value : "All";
   const filterCoord = document.getElementById("filterCoord") ? document.getElementById("filterCoord").value : "All";
-  const filterMonth = document.getElementById("filterMonth").value;
-  const filterType = document.getElementById("filterType").value;
-  const filterStatus = document.getElementById("filterStatus").value;
+  const filterMonth = document.getElementById("filterMonth") ? document.getElementById("filterMonth").value : "";
+  const filterType = document.getElementById("filterType") ? document.getElementById("filterType").value : "All";
+  const filterStatus = document.getElementById("filterStatus") ? document.getElementById("filterStatus").value : "All";
 
   tableBody.innerHTML = "";
-  let index = 1, hasVisibleRows = false;
+  let index = 1;
+  let hasVisibleRows = false;
 
   window.allDonationsList.forEach((data) => {
     const currentStatus = data.status || "Pending";
@@ -226,8 +298,11 @@ function renderTable() {
     if (matchName && matchCoord && matchMonth && matchType && matchStatus) {
       hasVisibleRows = true;
       let submitDate = "N/A";
-      if (data.timestamp) {
-        submitDate = data.timestamp.toDate().toLocaleString("en-IN", { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+      if (data.timestamp && data.timestamp.toDate) {
+        submitDate = data.timestamp.toDate().toLocaleString("en-IN", { 
+          day: '2-digit', month: 'short', year: 'numeric', 
+          hour: '2-digit', minute: '2-digit', hour12: true 
+        });
       }
 
       let statusBadge = "";
@@ -252,10 +327,10 @@ function renderTable() {
       tableBody.innerHTML += `
         <tr>
           <td>${index++}</td>
-          <td><strong style="color: #0056b3;">${data.donorName}</strong></td>
+          <td><strong style="color: #0056b3;">${data.donorName || "N/A"}</strong></td>
           <td>${formatMonthYearString(data.monthYear)}</td>
-          <td style="color: #28a745; font-weight: bold;">₹ ${data.amount}</td>
-          <td><span style="background: #e6f6ea; color: #28a745; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">${data.donorType}</span></td>
+          <td style="color: #28a745; font-weight: bold;">₹ ${data.amount || 0}</td>
+          <td><span style="background: #e6f6ea; color: #28a745; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">${data.donorType || "N/A"}</span></td>
           <td><strong style="color: #555;">${currentCoord}</strong></td>
           <td><button onclick="openSlipModal('${data.id}')" style="background: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight:bold;">View Slip</button></td>
           <td style="font-size: 13px; color: #555;">${submitDate}</td>
@@ -264,21 +339,24 @@ function renderTable() {
         </tr>`;
     }
   });
-  if (!hasVisibleRows) tableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding: 15px; font-weight:bold; color:#dc3545;">No matching records found.</td></tr>`;
+
+  if (!hasVisibleRows) {
+    tableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding: 15px; font-weight:bold; color:#dc3545;">No matching records found.</td></tr>`;
+  }
 }
 
-document.getElementById("filterName").addEventListener("change", renderTable);
-if(document.getElementById("filterCoord")) document.getElementById("filterCoord").addEventListener("change", renderTable); 
-document.getElementById("filterMonth").addEventListener("change", renderTable);
-document.getElementById("filterType").addEventListener("change", renderTable);
-document.getElementById("filterStatus").addEventListener("change", renderTable);
+// Filters attach
+["filterName", "filterCoord", "filterMonth", "filterType", "filterStatus"].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener("change", renderTable);
+});
 
 window.clearFilters = function() {
-  document.getElementById("filterName").value = "All";
-  if(document.getElementById("filterCoord")) document.getElementById("filterCoord").value = "All"; 
-  document.getElementById("filterMonth").value = "";
-  document.getElementById("filterType").value = "All";
-  document.getElementById("filterStatus").value = "All";
+  if (document.getElementById("filterName")) document.getElementById("filterName").value = "All";
+  if (document.getElementById("filterCoord")) document.getElementById("filterCoord").value = "All"; 
+  if (document.getElementById("filterMonth")) document.getElementById("filterMonth").value = "";
+  if (document.getElementById("filterType")) document.getElementById("filterType").value = "All";
+  if (document.getElementById("filterStatus")) document.getElementById("filterStatus").value = "All";
   renderTable(); 
 };
 
@@ -286,9 +364,12 @@ window.updateDonationStatus = function(docId, newStatus) {
   if (userRole === "admin") {
     if(confirm(`Are you sure you want to mark this donation as ${newStatus}?`)) {
       db.collection("donations").doc(docId).update({ status: newStatus }).catch(error => alert("Error: " + error.message));
-    } else renderTable();
+    } else {
+      renderTable();
+    }
   }
 };
+
 window.deleteDonation = function(docId) {
   if (userRole === "admin") {
     if(confirm("Are you sure you want to permanently delete this donation record?")) {
@@ -300,15 +381,19 @@ window.deleteDonation = function(docId) {
 window.openSlipModal = function(docId) {
   const data = window.donationsData[docId];
   if(!data) return;
-  document.getElementById("mName").innerText = data.donorName;
+  document.getElementById("mName").innerText = data.donorName || "";
   document.getElementById("mMonth").innerText = formatMonthYearString(data.monthYear);
-  document.getElementById("mAmount").innerText = data.amount;
-  document.getElementById("mType").innerText = data.donorType;
+  document.getElementById("mAmount").innerText = data.amount || 0;
+  document.getElementById("mType").innerText = data.donorType || "";
   document.getElementById("mCoord").innerText = data.coordinatorName || "N/A"; 
-  document.getElementById("mDate").innerText = data.timestamp ? data.timestamp.toDate().toLocaleDateString("en-IN") : "N/A";
+  document.getElementById("mDate").innerText = data.timestamp && data.timestamp.toDate ? data.timestamp.toDate().toLocaleDateString("en-IN") : "N/A";
   document.getElementById("slipModal").style.display = "flex";
 };
-window.closeSlipModal = function() { document.getElementById("slipModal").style.display = "none"; };
+
+window.closeSlipModal = function() { 
+  document.getElementById("slipModal").style.display = "none"; 
+};
+
 window.downloadSlipImage = async function() {
   const canvas = await html2canvas(document.getElementById("adminReceiptContent"), { scale: 2 }); 
   const link = document.createElement("a");
