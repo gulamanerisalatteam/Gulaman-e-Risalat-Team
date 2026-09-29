@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Donors Form</title>
+  
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; }
+    .header { background: #0056b3; color: white; padding: 15px 20px; text-align: center; font-size: 20px; font-weight: bold; position: relative; }
+    .back-btn { position: absolute; left: 15px; top: 15px; color: white; text-decoration: none; font-size: 14px; background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 5px; }
+    
+    .container { padding: 20px; max-width: 500px; margin: auto; }
+    .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    
+    label { font-weight: bold; color: #333; margin-top: 10px; display: block; font-size: 14px; }
+    input, textarea { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; box-sizing: border-box; }
+    
+    .btn-submit { background: #28a745; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    .btn-submit:hover { background: #218838; }
+    
+    /* Receipt Styles */
+    #receiptCard { display: none; }
+    .receipt-box { border: 2px dashed #0056b3; padding: 20px; border-radius: 10px; background: #fff; margin-bottom: 15px; }
+    .receipt-row { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 8px 0; font-size: 14px; }
+    .btn-share { background: #007bff; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
+    .btn-new { background: #6c757d; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
+  </style>
+
+  <!-- Firebase & html2canvas -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+  <div class="header">
+    <a href="donation-slip.html" class="back-btn">⬅ Back</a>
+    ➕ New Donors Form
+  </div>
+
+  <div class="container">
+    <!-- FORM SECTION -->
+    <div class="card" id="formCard">
+      <form id="newDonorForm">
+        <label>Donor Name *</label>
+        <input type="text" id="ndName" placeholder="Enter Full Name" required>
+
+        <label>Mobile Number *</label>
+        <input type="number" id="ndMobile" placeholder="10-digit Mobile Number" required>
+
+        <label>Address *</label>
+        <textarea id="ndAddress" rows="2" placeholder="Enter Full Address" required></textarea>
+
+        <label>Donation Amount (₹) *</label>
+        <input type="number" id="ndAmount" placeholder="Enter Amount" required>
+
+        <button type="submit" class="btn-submit">Submit & Generate Slip</button>
+      </form>
+      <div id="msgBox" style="margin-top: 15px; font-weight: bold; text-align: center;"></div>
+    </div>
+
+    <!-- RECEIPT SECTION -->
+    <div class="card" id="receiptCard">
+      <div class="receipt-box" id="receiptContent">
+        <div style="text-align: center; margin-bottom: 15px;">
+          <h3 style="color: #0056b3; margin: 0;">Gulaman-e-Risalat Team</h3>
+          <p style="margin: 5px 0 0 0; font-size: 14px; color: #555; font-weight: bold;">New Donor Receipt</p>
+        </div>
+        
+        <div class="receipt-row"><strong>Name:</strong> <span id="rName"></span></div>
+        <div class="receipt-row"><strong>Mobile:</strong> <span id="rMobile"></span></div>
+        <div class="receipt-row"><strong>Amount:</strong> <span style="color: #28a745; font-weight: bold;">₹ <span id="rAmount"></span></span></div>
+        <div class="receipt-row"><strong>Collected By:</strong> <span id="rCoord"></span></div>
+        <div class="receipt-row" style="border-bottom: none;"><strong>Date:</strong> <span id="rDate"></span></div>
+      </div>
+
+      <button onclick="shareReceipt()" class="btn-share">📤 Share Receipt Image</button>
+      <button onclick="window.location.reload()" class="btn-new">➕ Add Another</button>
+    </div>
+  </div>
+
+  <script src="js/new-donor.js"></script>
+</body>
+</html>
