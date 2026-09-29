@@ -1,13 +1,19 @@
-// 1. Security Check
-const loggedInUser = JSON.parse(localStorage.getItem("loggedInCoordinator"));
+// 1. Check Login & Get Name safely
+let loggedInUser = null;
+let loggedInCoordName = "";
 
-if (!loggedInUser) {
+try {
+  loggedInUser = JSON.parse(localStorage.getItem("loggedInCoordinator"));
+  loggedInCoordName = loggedInUser.fullName || loggedInUser.name;
+} catch(e) {
   window.location.href = "index.html";
-} else {
-  document.getElementById("welcomeUser").innerText = "Welcome, " + loggedInUser.fullName;
 }
 
-// 2. Firebase configuration
+if (!loggedInUser || !loggedInCoordName) {
+  window.location.href = "index.html";
+}
+
+// 2. Firebase Init
 const firebaseConfig = {
   apiKey: "AIzaSyAXXMSZOOd1Cb_Tuwp8ZnjT6Iwd0jMrh6U",
   authDomain: "gulaman-e-risalat-team.firebaseapp.com",
@@ -17,106 +23,88 @@ const firebaseConfig = {
   appId: "1:284287467697:web:e57714c6b594b0a9be6290"
 };
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// 3. Date format helper
-function formatMonthYearString(yyyyMm) {
-  if (!yyyyMm || !yyyyMm.includes("-")) return yyyyMm;
-  const parts = yyyyMm.split("-");
-  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  const monthIndex = parseInt(parts[1], 10) - 1;
-  return `${months[monthIndex]}-${parts[0]}`;
-}
+// 3. Welcome Text
+document.getElementById("welcomeUser").innerText = `Welcome, ${loggedInCoordName}`;
 
-// 4. FETCH DONORS FROM FIREBASE (Filtered by Assigned Coordinator)
-const donorNameSelect = document.getElementById("donorName");
-const donorTypeSelect = document.getElementById("donorType");
-
-db.collection("monthly_donors_list").orderBy("donorName", "asc").onSnapshot((snapshot) => {
-  donorNameSelect.innerHTML = `<option value="" disabled selected>Select Donor</option>`;
+// 4. LOAD ONLY ASSIGNED DONORS IN DROPDOWN
+db.collection("monthly_donors_list").orderBy("donorName", "asc").onSnapshot(snapshot => {
+  const select = document.getElementById("donorName");
+  select.innerHTML = '<option value="" disabled selected>Select Donor</option>';
   
-  let matchFound = false;
+  let hasDonors = false;
 
-  snapshot.forEach((doc) => {
+  snapshot.forEach(doc => {
     const data = doc.data();
-    
-    // Sirf wahi donor dikhega jo logged-in user ko assign hai
-    if (data.assignedCoordinator === loggedInUser.fullName) {
-      matchFound = true;
-      const option = document.createElement("option");
-      option.value = data.donorName; 
-      option.dataset.type = data.donorType; 
-      option.innerText = data.donorName; // Mobile number remove kiya gaya
-      donorNameSelect.appendChild(option);
+    // EXACT MATCH: Seedha assignment logic check ho raha hai
+    if (data.assignedCoordinator === loggedInCoordName) {
+      select.innerHTML += `<option value="${data.donorName}">${data.donorName}</option>`;
+      hasDonors = true;
     }
   });
 
-  if (!matchFound) {
-    donorNameSelect.innerHTML = `<option value="" disabled selected>No Donors Assigned to You</option>`;
-  }
-}, (error) => {
-  donorNameSelect.innerHTML = `<option value="" disabled selected>Error loading donors</option>`;
-});
-
-// SMART AUTO-FILL: Jaise hi naam select hoga, Type apne aap fill ho jayega
-donorNameSelect.addEventListener("change", function() {
-  const selectedOption = this.options[this.selectedIndex];
-  const type = selectedOption.dataset.type;
-  if (type) {
-    donorTypeSelect.value = type;
+  if (!hasDonors) {
+    select.innerHTML = '<option value="" disabled selected>No Donors Assigned to You</option>';
   }
 });
 
-// 5. Donation Form Submit Event
-document.getElementById("donationForm").addEventListener("submit", function(e) {
+// 5. Submit Form & Generate Receipt
+document.getElementById("donationForm").addEventListener("submit", async function(e) {
   e.preventDefault();
-
-  const donorName = document.getElementById("donorName").value;
-  const monthYear = document.getElementById("monthYear").value;
+  
+  const dName = document.getElementById("donorName").value;
+  const mYear = document.getElementById("monthYear").value;
   const amount = document.getElementById("donationAmount").value;
-  const donorType = document.getElementById("donorType").value;
+  const dType = document.getElementById("donorType").value;
   const msgBox = document.getElementById("donationMsg");
+  
+  if (!dName) {
+    alert("Please select a valid donor.");
+    return;
+  }
 
   msgBox.style.color = "#0056b3";
-  msgBox.innerText = "Submitting donation slip...";
+  msgBox.innerText = "Generating slip, please wait...";
 
-  // Save to Firebase
-  db.collection("donations").add({
-    donorName: donorName,
-    monthYear: monthYear,
-    amount: Number(amount), 
-    donorType: donorType,
-    coordinatorName: loggedInUser.fullName, 
-    coordinatorMobile: loggedInUser.mobile, 
-    status: "Pending", // Default status Pending save hoga
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(() => {
-    msgBox.innerText = "";
-    
-    document.getElementById("rName").innerText = donorName;
-    document.getElementById("rMonth").innerText = formatMonthYearString(monthYear); 
+  try {
+    await db.collection("donations").add({
+      donorName: dName,
+      monthYear: mYear,
+      amount: Number(amount),
+      donorType: dType,
+      coordinatorName: loggedInCoordName,
+      coordinatorMobile: loggedInUser.mobile || "N/A",
+      status: "Pending", 
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    document.getElementById("rName").innerText = dName;
+    document.getElementById("rMonth").innerText = mYear; 
     document.getElementById("rAmount").innerText = amount;
-    document.getElementById("rType").innerText = donorType;
-    document.getElementById("rCoord").innerText = loggedInUser.fullName;
-    
-    const today = new Date();
-    document.getElementById("rDate").innerText = today.toLocaleDateString("en-IN");
+    document.getElementById("rType").innerText = dType;
+    document.getElementById("rCoord").innerText = loggedInCoordName;
+    document.getElementById("rDate").innerText = new Date().toLocaleDateString("en-IN");
 
+    msgBox.innerText = "";
     document.getElementById("formCard").style.display = "none";
     document.getElementById("receiptCard").style.display = "block";
     
-    document.getElementById("donationForm").reset();
-
-  }).catch((error) => {
+  } catch (error) {
     msgBox.style.color = "#dc3545";
-    msgBox.innerText = "Error: " + error.message;
-  });
+    msgBox.innerText = "Error saving donation: " + error.message;
+  }
 });
 
-// 6. Share Receipt Image Function
+// 6. Form Reset
+window.showFormAgain = function() {
+  document.getElementById("donationForm").reset();
+  document.getElementById("receiptCard").style.display = "none";
+  document.getElementById("formCard").style.display = "block";
+};
+
+// 7. Download/Share Slip
 window.shareReceipt = async function() {
   const receiptElement = document.getElementById("receiptContent");
   try {
@@ -127,7 +115,7 @@ window.shareReceipt = async function() {
         await navigator.share({
           files: [file],
           title: "Donation Receipt",
-          text: "Jazakallah for your donation! Here is your receipt."
+          text: "Jazakallah for your generous donation! Here is your receipt."
         });
       } else {
         const link = document.createElement("a");
@@ -139,16 +127,4 @@ window.shareReceipt = async function() {
   } catch (error) {
     alert("Error sharing image: " + error.message);
   }
-};
-
-// 7. Show Form Again
-window.showFormAgain = function() {
-  document.getElementById("receiptCard").style.display = "none";
-  document.getElementById("formCard").style.display = "block";
-};
-
-// 8. Logout Function
-window.logoutCoordinator = function() {
-  localStorage.removeItem("loggedInCoordinator");
-  window.location.href = "index.html"; 
 };
