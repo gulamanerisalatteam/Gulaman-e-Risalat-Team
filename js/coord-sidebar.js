@@ -2,7 +2,7 @@
 
 const coordSidebarHTML = `
   <style>
-    /* Coordinator Mobile Sidebar Styles */
+    /* --- MOBILE FIRST BASE STYLES --- */
     .coord-header {
         background: #0056b3;
         color: white;
@@ -12,10 +12,11 @@ const coordSidebarHTML = `
         align-items: center;
         position: sticky;
         top: 0;
-        z-index: 900;
+        z-index: 1001; /* Z-index high rakha hai taaki overlay ke upar rahe aur dobara click ho sake */
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     .coord-header h3 { margin: 0; font-size: 18px; }
+    
     .menu-btn {
         background: none;
         border: none;
@@ -24,20 +25,21 @@ const coordSidebarHTML = `
         cursor: pointer;
         padding: 0;
     }
+    
     .coord-sidebar {
         position: fixed;
         top: 0;
-        left: -260px;
+        left: -260px; /* Default hidden on mobile */
         width: 250px;
         height: 100%;
         background: #fff;
         box-shadow: 2px 0 15px rgba(0,0,0,0.2);
-        transition: 0.3s ease-in-out;
+        transition: left 0.3s ease-in-out;
         z-index: 1000;
         display: flex;
         flex-direction: column;
     }
-    .coord-sidebar.active { left: 0; }
+    .coord-sidebar.active { left: 0; } /* Class add hone par show hogi */
     
     .sidebar-top {
         background: #f4f8fb;
@@ -62,6 +64,7 @@ const coordSidebarHTML = `
         color: #0056b3;
         border-left: 4px solid #0056b3;
     }
+    
     .overlay {
         position: fixed;
         top: 0;
@@ -94,11 +97,33 @@ const coordSidebarHTML = `
         background: none;
         border: none;
     }
+
+    /* --- DESKTOP STYLES (Permanent Sidebar) --- */
+    @media (min-width: 769px) {
+        .coord-header {
+            display: none; /* Computer par top wali neeli patti hide ho jayegi */
+        }
+        .coord-sidebar {
+            left: 0; /* Computer par sidebar hamesha open rahega */
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            border-right: 1px solid #ddd;
+        }
+        .overlay {
+            display: none !important; /* PC par kaale background (overlay) ki zarurat nahi */
+        }
+        .close-btn {
+            display: none; /* PC par close button hide ho jayega */
+        }
+        body {
+            padding-left: 250px; /* Sidebar ke liye jagah chhodne ke liye content right shift hoga */
+        }
+    }
   </style>
 
   <!-- Mobile Header -->
   <div class="coord-header">
     <h3>Gulaman-e-Risalat</h3>
+    <!-- 3 Line Button -->
     <button class="menu-btn" id="openMenuBtn">☰</button>
   </div>
 
@@ -107,6 +132,7 @@ const coordSidebarHTML = `
 
   <!-- Sidebar Menu -->
   <div class="coord-sidebar" id="coordSidebar">
+    <!-- Close Button (✖) -->
     <button class="close-btn" id="closeMenuBtn">✖</button>
     
     <div class="sidebar-top">
@@ -134,20 +160,28 @@ if (sidebarContainer) {
     document.getElementById("nav-monthly-slip").classList.add("active");
   }
 
-  // Sidebar Open/Close Logic
-  document.getElementById("openMenuBtn").addEventListener("click", () => {
-    document.getElementById("coordSidebar").classList.add("active");
-    document.getElementById("sidebarOverlay").classList.add("active");
+  // DOM Elements
+  const menuBtn = document.getElementById("openMenuBtn");
+  const sidebar = document.getElementById("coordSidebar");
+  const overlay = document.getElementById("sidebarOverlay");
+  const closeBtn = document.getElementById("closeMenuBtn");
+
+  // 1. Mobile par 3 line (☰) click karne par khulega bhi aur band bhi hoga (Toggle)
+  menuBtn.addEventListener("click", () => {
+    sidebar.classList.toggle("active");
+    overlay.classList.toggle("active");
   });
 
-  document.getElementById("closeMenuBtn").addEventListener("click", () => {
-    document.getElementById("coordSidebar").classList.remove("active");
-    document.getElementById("sidebarOverlay").classList.remove("active");
+  // 2. Cross (✖) button par click karke band karna
+  closeBtn.addEventListener("click", () => {
+    sidebar.classList.remove("active");
+    overlay.classList.remove("active");
   });
 
-  document.getElementById("sidebarOverlay").addEventListener("click", () => {
-    document.getElementById("coordSidebar").classList.remove("active");
-    document.getElementById("sidebarOverlay").classList.remove("active");
+  // 3. Kaale background (Overlay) par click karne par band karna
+  overlay.addEventListener("click", () => {
+    sidebar.classList.remove("active");
+    overlay.classList.remove("active");
   });
 }
 
