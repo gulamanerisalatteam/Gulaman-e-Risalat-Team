@@ -3,22 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Monthly Donors - Admin Panel</title>
+  <title>Monthly Donors Collection</title>
   
   <link rel="stylesheet" href="css/admin.css">
 
   <style>
     .filter-card { background: white; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
-    .summary-filter-card { background: #f4f8fb; border: 1px solid #d1e3f0; } /* Special color for Summary Filters */
+    .summary-filter-card { background: #f4f8fb; border: 1px solid #d1e3f0; } 
     .filter-group { display: flex; flex-direction: column; flex: 1; min-width: 150px; }
     .filter-group label { font-size: 13px; font-weight: bold; color: #555; margin-bottom: 5px; }
     .filter-group input, .filter-group select { padding: 8px 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
     .btn-clear { background: #6c757d; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; height: 37px; }
     .btn-clear:hover { background: #5a6268; }
-    .btn-apply { background: #0056b3; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; height: 37px; }
-    .btn-apply:hover { background: #004494; }
     
-    /* Summary Tables Styling */
     .summary-title { margin-top: 0; color: #0056b3; border-bottom: 2px solid #f1f1f1; padding-bottom: 10px; margin-bottom: 15px; }
     .table-card th { background-color: #f8f9fa; color: #333; }
   </style>
@@ -26,16 +23,14 @@
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  
-  <!-- Image Generator Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 
-  <!-- LEFT SIDEBAR -->
+  <!-- Dynamic Sidebar Container -->
   <div id="sidebar-container"></div>
+  <div id="coord-sidebar-container"></div>
 
-  <!-- RIGHT MAIN CONTENT -->
   <div class="main-content">
     <h1 class="page-title">Monthly Donors Collection</h1>
 
@@ -57,12 +52,8 @@
     <div class="table-card" style="overflow-x: auto; margin-bottom: 30px;">
       <h3 class="summary-title">📦 Box Donation Summary</h3>
       <table style="width: 100%; min-width: 600px; text-align: center;">
-        <thead id="boxSummaryHead">
-          <!-- JS se load hoga -->
-        </thead>
-        <tbody id="boxSummaryBody">
-          <tr><td colspan="10" style="padding: 15px;">Loading Box Summary...</td></tr>
-        </tbody>
+        <thead id="boxSummaryHead"></thead>
+        <tbody id="boxSummaryBody"><tr><td colspan="10">Loading...</td></tr></tbody>
       </table>
     </div>
 
@@ -70,12 +61,8 @@
     <div class="table-card" style="overflow-x: auto; margin-bottom: 30px;">
       <h3 class="summary-title">📝 Without Box Summary</h3>
       <table style="width: 100%; min-width: 600px; text-align: center;">
-        <thead id="withoutBoxSummaryHead">
-          <!-- JS se load hoga -->
-        </thead>
-        <tbody id="withoutBoxSummaryBody">
-          <tr><td colspan="10" style="padding: 15px;">Loading Without Box Summary...</td></tr>
-        </tbody>
+        <thead id="withoutBoxSummaryHead"></thead>
+        <tbody id="withoutBoxSummaryBody"><tr><td colspan="10">Loading...</td></tr></tbody>
       </table>
     </div>
 
@@ -84,15 +71,12 @@
     <div class="filter-card">
       <div class="filter-group">
         <label>Donor Name</label>
-        <select id="filterName">
-          <option value="All">All Donors</option>
-        </select>
+        <select id="filterName"><option value="All">All Donors</option></select>
       </div>
-      <div class="filter-group">
+      <!-- Coordinator ke liye ye filter hide ho jayega -->
+      <div class="filter-group" id="filterCoordContainer">
         <label>Collected By</label>
-        <select id="filterCoord">
-          <option value="All">All Coordinators</option>
-        </select>
+        <select id="filterCoord"><option value="All">All Coordinators</option></select>
       </div>
       <div class="filter-group">
         <label>Month & Year</label>
@@ -131,25 +115,23 @@
             <th>Slip</th>
             <th>Submit Date</th>
             <th>Status</th>
-            <th>Update Status</th>
-            <th>Action</th>
+            <!-- ID di gayi hai taaki Coordinator ke liye hide kar sakein -->
+            <th id="th-update">Update Status</th>
+            <th id="th-action">Action</th>
           </tr>
         </thead>
         <tbody id="donorsTableBody">
-          <tr>
-            <td colspan="11" style="text-align: center; padding: 20px; font-weight: bold; color: #555;">Loading data...</td>
-          </tr>
+          <tr><td colspan="11" style="text-align: center; padding: 20px;">Loading data...</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 
   <!-- Modal for Viewing Slip -->
-  <div id="slipModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center;">
-    <div style="background: white; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+  <div id="slipModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center;">
+    <div style="background: white; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px;">
       <div id="adminReceiptContent" style="padding: 20px; border: 2px dashed #0056b3; border-radius: 10px; margin-bottom: 20px; background: #fff;">
         <div style="text-align: center; margin-bottom: 15px;">
-          <img src="images/logo.png" alt="Logo" style="width: 60px;">
           <h3 style="color: #0056b3; margin: 5px 0;">Gulaman-e-Risalat Team</h3>
           <p style="margin: 0; font-size: 14px; color: #555;">Donation Receipt</p>
         </div>
@@ -179,7 +161,17 @@
     </div>
   </div>
 
-  <script src="js/sidebar.js"></script>
+  <!-- DYNAMIC SIDEBAR SCRIPT -->
+  <script>
+    if (localStorage.getItem("loggedInCoordinator")) {
+      document.write('<script src="js/coord-sidebar.js"><\\/script>');
+    } else if (localStorage.getItem("adminUser")) {
+      document.write('<script src="js/sidebar.js"><\\/script>');
+    } else {
+      window.location.href = "index.html";
+    }
+  </script>
+  
   <script src="js/monthly-donors-collection.js"></script>
 </body>
 </html>
