@@ -17,6 +17,7 @@ const sidebarHTML = `
     <a href="coordinator-details.html" id="nav-coordinator">Coordinator Details</a>
     <a href="monthly-donors.html" id="nav-monthly-donors">Monthly Donors</a>
     <a href="monthly-donors-collection.html" id="nav-collection">Monthly Donors Collection</a> 
+    <a href="donations.html" id="nav-donations">Donations</a> <!-- NAYA LINK -->
     <a href="assign-donors.html" id="nav-assign">Assign Donors</a>
     
     <button class="logout-btn" onclick="localStorage.removeItem('adminUser'); window.location.href='index.html';">Logout</button>
@@ -36,8 +37,9 @@ if (currentPage.includes("coordinator-details.html")) {
   document.getElementById("nav-monthly-donors").classList.add("active");
 } else if (currentPage.includes("assign-donors.html")) { 
   document.getElementById("nav-assign").classList.add("active");
+} else if (currentPage.includes("donations.html")) { 
+  document.getElementById("nav-donations").classList.add("active"); // NAYA ACTIVE LOGIC
 } else {
-  // Default active tab dashboard rahega
   document.getElementById("nav-dashboard").classList.add("active");
 }
 
