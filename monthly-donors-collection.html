@@ -9,7 +9,7 @@
 
   <style>
     .filter-card { background: white; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
-    .summary-filter-card { background: #f4f8fb; border: 1px solid #d1e3f0; display: block; } /* Fixed Design Issue */
+    .summary-filter-card { background: #f4f8fb; border: 1px solid #d1e3f0; display: block; }
     .filter-group { display: flex; flex-direction: column; flex: 1; min-width: 150px; }
     .filter-group label { font-size: 13px; font-weight: bold; color: #555; margin-bottom: 5px; }
     .filter-group input, .filter-group select { padding: 8px 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
@@ -33,7 +33,7 @@
   <div class="main-content">
     <h1 class="page-title">Monthly Donors Collection</h1>
 
-    <!-- SUMMARY DATE RANGE FILTER (Design Fixed) -->
+    <!-- SUMMARY DATE RANGE FILTER -->
     <div class="filter-card summary-filter-card">
       <h4 style="margin: 0 0 15px 0; color: #0056b3;">📅 Filter Summary by Month Range</h4>
       <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
@@ -160,14 +160,17 @@
     </div>
   </div>
 
+  <!-- FIXED DYNAMIC SIDEBAR SCRIPT -->
   <script>
+    const script = document.createElement("script");
     if (localStorage.getItem("loggedInCoordinator")) {
-      document.write('<script src="js/coord-sidebar.js"><\\/script>');
+      script.src = "js/coord-sidebar.js";
     } else if (localStorage.getItem("adminUser")) {
-      document.write('<script src="js/sidebar.js"><\\/script>');
+      script.src = "js/sidebar.js";
     } else {
       window.location.href = "index.html";
     }
+    document.body.appendChild(script);
   </script>
   
   <script src="js/monthly-donors-collection.js"></script>
