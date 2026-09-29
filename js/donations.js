@@ -15,9 +15,9 @@ const db = firebase.firestore();
 const tableBody = document.getElementById("donationsTableBody");
 
 window.donationsData = []; 
-window.donorDetails = {}; // Store Mobile and Address
+window.donorDetails = {}; // Store Mobile and Address for permanent donors
 
-// 1. Fetch Donors List to get Mobile and Address
+// 1. Fetch Permanent Donors List to get their Mobile and Address
 db.collection("monthly_donors_list").onSnapshot((snapshot) => {
   window.donorDetails = {};
   snapshot.forEach((doc) => {
@@ -27,7 +27,7 @@ db.collection("monthly_donors_list").onSnapshot((snapshot) => {
       address: data.address || "N/A"
     };
   });
-  renderTable(); // Re-render table if donor details update
+  renderTable(); 
 });
 
 // Populate Dropdowns Dynamically
@@ -61,7 +61,7 @@ function populateDropdowns() {
   if (coordSet.has(currentCoord)) filterCoord.value = currentCoord;
 }
 
-// 2. Fetch live Donations Data
+// 2. Fetch live Donations Data (Both Monthly and One-Time)
 db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
   window.donationsData = [];
   
@@ -88,7 +88,7 @@ function renderTable() {
   const filterName = document.getElementById("filterName").value;
   const filterMobile = document.getElementById("filterMobile").value.trim();
   const filterCoord = document.getElementById("filterCoord").value;
-  const filterDate = document.getElementById("filterDate").value; // YYYY-MM-DD
+  const filterDate = document.getElementById("filterDate").value; 
   const filterStatus = document.getElementById("filterStatus").value;
 
   tableBody.innerHTML = "";
@@ -99,8 +99,10 @@ function renderTable() {
     const currentStatus = data.status || "Pending";
     const currentCoord = data.coordinatorName || "N/A";
     
-    // Get mobile and address from matching donor details
-    const dDetails = window.donorDetails[data.donorName] || { mobile: "N/A", address: "N/A" };
+    // SMART LOGIC: Agar One-Time donor hai toh data.mobile uthaega, warna monthly list se
+    const dDetails = window.donorDetails[data.donorName] || {};
+    const finalMobile = data.mobile || dDetails.mobile || "N/A";
+    const finalAddress = data.address || dDetails.address || "N/A";
     
     let submitDateObj = null;
     let submitDateFormatted = "N/A";
@@ -112,13 +114,12 @@ function renderTable() {
         day: '2-digit', month: 'short', year: 'numeric', 
         hour: '2-digit', minute: '2-digit', hour12: true 
       });
-      // For filtering (YYYY-MM-DD format)
       submitDateForFilter = submitDateObj.toISOString().split('T')[0];
     }
 
     // Filter Conditions Check
     const matchName = filterName === "All" || data.donorName === filterName;
-    const matchMobile = filterMobile === "" || dDetails.mobile.includes(filterMobile);
+    const matchMobile = filterMobile === "" || finalMobile.includes(filterMobile);
     const matchCoord = filterCoord === "All" || currentCoord === filterCoord;
     const matchStatus = filterStatus === "All" || currentStatus === filterStatus;
     const matchDate = filterDate === "" || submitDateForFilter === filterDate;
@@ -146,8 +147,8 @@ function renderTable() {
         <tr>
           <td>${index++}</td>
           <td><strong style="color: #0056b3;">${data.donorName}</strong></td>
-          <td>${dDetails.mobile}</td>
-          <td style="font-size: 12px; max-width: 200px;">${dDetails.address}</td>
+          <td>${finalMobile}</td>
+          <td style="font-size: 12px; max-width: 200px;">${finalAddress}</td>
           <td style="color: #28a745; font-weight: bold;">₹ ${data.amount}</td>
           <td><strong style="color: #555;">${currentCoord}</strong></td>
           <td>
@@ -212,8 +213,13 @@ window.openSlipModal = function(docId) {
   const data = window.donationsData.find(d => d.id === docId);
   if(!data) return;
 
+  const dDetails = window.donorDetails[data.donorName] || {};
+  const finalMobile = data.mobile || dDetails.mobile || "N/A";
+
   document.getElementById("mName").innerText = data.donorName;
+  document.getElementById("mMobile").innerText = finalMobile;
   document.getElementById("mAmount").innerText = data.amount;
+  document.getElementById("mType").innerText = data.donorType || "N/A";
   document.getElementById("mCoord").innerText = data.coordinatorName || "N/A"; 
 
   let modalDate = "N/A";
