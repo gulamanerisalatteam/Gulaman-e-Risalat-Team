@@ -15,20 +15,6 @@ const db = firebase.firestore();
 const tableBody = document.getElementById("donationsTableBody");
 
 window.donationsData = []; 
-window.donorDetails = {}; // Store Mobile and Address for permanent donors
-
-// 1. Fetch Permanent Donors List to get their Mobile and Address
-db.collection("monthly_donors_list").onSnapshot((snapshot) => {
-  window.donorDetails = {};
-  snapshot.forEach((doc) => {
-    const data = doc.data();
-    window.donorDetails[data.donorName] = {
-      mobile: data.mobile || "N/A",
-      address: data.address || "N/A"
-    };
-  });
-  renderTable(); 
-});
 
 // Populate Dropdowns Dynamically
 function populateDropdowns() {
@@ -61,20 +47,20 @@ function populateDropdowns() {
   if (coordSet.has(currentCoord)) filterCoord.value = currentCoord;
 }
 
-// 2. Fetch live Donations Data (Both Monthly and One-Time)
-db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+// 1. Fetch live Donations Data (FROM "new_donations" COLLECTION)
+db.collection("new_donations").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
   window.donationsData = [];
   
-  if (snapshot.empty) {
-    tableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding: 15px;">No donations recorded yet.</td></tr>`;
-    return;
-  }
-
   snapshot.forEach((doc) => {
     const data = doc.data();
     data.id = doc.id; 
-    window.donationsData.push(data);
+    window.donationsData.push(data); // Yahan filter hat gaya kyunki ab collection hi alag hai
   });
+
+  if (window.donationsData.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding: 15px;">No New/One-Time donations recorded yet.</td></tr>`;
+    return;
+  }
 
   populateDropdowns(); 
   renderTable(); 
@@ -83,7 +69,7 @@ db.collection("donations").orderBy("timestamp", "desc").onSnapshot((snapshot) =>
 });
 
 
-// 3. FILTERING & RENDER TABLE LOGIC
+// 2. FILTERING & RENDER TABLE LOGIC
 function renderTable() {
   const filterName = document.getElementById("filterName").value;
   const filterMobile = document.getElementById("filterMobile").value.trim();
@@ -99,10 +85,8 @@ function renderTable() {
     const currentStatus = data.status || "Pending";
     const currentCoord = data.coordinatorName || "N/A";
     
-    // SMART LOGIC: Agar One-Time donor hai toh data.mobile uthaega, warna monthly list se
-    const dDetails = window.donorDetails[data.donorName] || {};
-    const finalMobile = data.mobile || dDetails.mobile || "N/A";
-    const finalAddress = data.address || dDetails.address || "N/A";
+    const finalMobile = data.mobile || "N/A";
+    const finalAddress = data.address || "N/A";
     
     let submitDateObj = null;
     let submitDateFormatted = "N/A";
@@ -188,10 +172,10 @@ window.clearFilters = function() {
   renderTable(); 
 };
 
-// STATUS UPDATE 
+// STATUS UPDATE (In "new_donations" collection)
 window.updateDonationStatus = function(docId, newStatus) {
   if(confirm(`Are you sure you want to mark this donation as ${newStatus}?`)) {
-    db.collection("donations").doc(docId).update({
+    db.collection("new_donations").doc(docId).update({
       status: newStatus
     }).catch((error) => {
       alert("Error updating status: " + error.message);
@@ -199,10 +183,10 @@ window.updateDonationStatus = function(docId, newStatus) {
   }
 };
 
-// DELETE DONATION RECORD
+// DELETE DONATION RECORD (From "new_donations" collection)
 window.deleteDonation = function(docId) {
   if(confirm("Are you sure you want to permanently delete this donation record? This action cannot be undone.")) {
-    db.collection("donations").doc(docId).delete().catch((error) => {
+    db.collection("new_donations").doc(docId).delete().catch((error) => {
       alert("Error deleting record: " + error.message);
     });
   }
@@ -213,8 +197,7 @@ window.openSlipModal = function(docId) {
   const data = window.donationsData.find(d => d.id === docId);
   if(!data) return;
 
-  const dDetails = window.donorDetails[data.donorName] || {};
-  const finalMobile = data.mobile || dDetails.mobile || "N/A";
+  const finalMobile = data.mobile || "N/A";
 
   document.getElementById("mName").innerText = data.donorName;
   document.getElementById("mMobile").innerText = finalMobile;
