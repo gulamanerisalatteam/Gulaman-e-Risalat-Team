@@ -9,7 +9,7 @@
 
   <style>
     .filter-card { background: white; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
-    .summary-filter-card { background: #f4f8fb; border: 1px solid #d1e3f0; } 
+    .summary-filter-card { background: #f4f8fb; border: 1px solid #d1e3f0; display: block; } /* Fixed Design Issue */
     .filter-group { display: flex; flex-direction: column; flex: 1; min-width: 150px; }
     .filter-group label { font-size: 13px; font-weight: bold; color: #555; margin-bottom: 5px; }
     .filter-group input, .filter-group select { padding: 8px 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
@@ -20,7 +20,6 @@
     .table-card th { background-color: #f8f9fa; color: #333; }
   </style>
 
-  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -34,18 +33,20 @@
   <div class="main-content">
     <h1 class="page-title">Monthly Donors Collection</h1>
 
-    <!-- SUMMARY DATE RANGE FILTER -->
+    <!-- SUMMARY DATE RANGE FILTER (Design Fixed) -->
     <div class="filter-card summary-filter-card">
-      <h4 style="margin: 0 100% 10px 0; color: #0056b3; width: 100%;">📅 Filter Summary by Month Range</h4>
-      <div class="filter-group">
-        <label>From Month</label>
-        <input type="month" id="summaryFromMonth">
+      <h4 style="margin: 0 0 15px 0; color: #0056b3;">📅 Filter Summary by Month Range</h4>
+      <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
+        <div class="filter-group">
+          <label>From Month</label>
+          <input type="month" id="summaryFromMonth">
+        </div>
+        <div class="filter-group">
+          <label>To Month</label>
+          <input type="month" id="summaryToMonth">
+        </div>
+        <button class="btn-clear" onclick="clearSummaryFilters()">Clear Range</button>
       </div>
-      <div class="filter-group">
-        <label>To Month</label>
-        <input type="month" id="summaryToMonth">
-      </div>
-      <button class="btn-clear" onclick="clearSummaryFilters()">Clear Range</button>
     </div>
 
     <!-- 1. BOX DONATION SUMMARY -->
@@ -53,7 +54,7 @@
       <h3 class="summary-title">📦 Box Donation Summary</h3>
       <table style="width: 100%; min-width: 600px; text-align: center;">
         <thead id="boxSummaryHead"></thead>
-        <tbody id="boxSummaryBody"><tr><td colspan="10">Loading...</td></tr></tbody>
+        <tbody id="boxSummaryBody"><tr><td colspan="10" style="padding: 15px;">Loading Box Summary...</td></tr></tbody>
       </table>
     </div>
 
@@ -62,7 +63,7 @@
       <h3 class="summary-title">📝 Without Box Summary</h3>
       <table style="width: 100%; min-width: 600px; text-align: center;">
         <thead id="withoutBoxSummaryHead"></thead>
-        <tbody id="withoutBoxSummaryBody"><tr><td colspan="10">Loading...</td></tr></tbody>
+        <tbody id="withoutBoxSummaryBody"><tr><td colspan="10" style="padding: 15px;">Loading Without Box Summary...</td></tr></tbody>
       </table>
     </div>
 
@@ -73,7 +74,6 @@
         <label>Donor Name</label>
         <select id="filterName"><option value="All">All Donors</option></select>
       </div>
-      <!-- Coordinator ke liye ye filter hide ho jayega -->
       <div class="filter-group" id="filterCoordContainer">
         <label>Collected By</label>
         <select id="filterCoord"><option value="All">All Coordinators</option></select>
@@ -115,7 +115,6 @@
             <th>Slip</th>
             <th>Submit Date</th>
             <th>Status</th>
-            <!-- ID di gayi hai taaki Coordinator ke liye hide kar sakein -->
             <th id="th-update">Update Status</th>
             <th id="th-action">Action</th>
           </tr>
@@ -161,7 +160,6 @@
     </div>
   </div>
 
-  <!-- DYNAMIC SIDEBAR SCRIPT -->
   <script>
     if (localStorage.getItem("loggedInCoordinator")) {
       document.write('<script src="js/coord-sidebar.js"><\\/script>');
