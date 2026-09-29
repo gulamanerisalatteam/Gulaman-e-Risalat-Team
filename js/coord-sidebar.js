@@ -166,6 +166,7 @@ const coordSidebarHTML = `
     
     <a href="donation-slip.html" id="nav-monthly-slip">Monthly Donors Slip</a>
     <a href="new-donors-form.html" id="nav-new-donor">New Donors Form</a>
+    <a href="monthly-donors-collection.html" id="nav-coord-collection">My Collection Summary</a>
     
     <button class="logout-btn" onclick="logoutCoordinator()">Logout</button>
   </div>
@@ -180,6 +181,8 @@ if (sidebarContainer) {
   const currentPage = window.location.pathname;
   if (currentPage.includes("new-donors-form.html")) {
     document.getElementById("nav-new-donor").classList.add("active");
+  } else if (currentPage.includes("monthly-donors-collection.html")) {
+    document.getElementById("nav-coord-collection").classList.add("active");
   } else {
     document.getElementById("nav-monthly-slip").classList.add("active");
   }
